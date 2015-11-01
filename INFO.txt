@@ -1,1 +1,1 @@
-Branch point for plugins
+Branch point for plugin templates
