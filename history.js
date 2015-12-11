@@ -1,7 +1,8 @@
-// === Closed document history collector ===
+п»ї// === Closed document history collector ===
 // http://akelpad.sourceforge.net/forum/viewtopic.php?p=16205#16205
 // http://sourceforge.net/projects/feyfre.u/files/Akelpad%20plugins/Scripts/history/
 // FeyFre (c) 2011-2014
+// v0.15 (2015.12.11) Portability
 // v0.14 (2014.12.20) Fixed crash since AkelPad v4.9.1
 // v0.13 (2014.10.12) Now hotkey-assigend functions are externally callable
 // v0.12 (2014.04.20) Cleaning list of no more existing items function. Bugfixes.
@@ -39,29 +40,29 @@
 //
 //// REQUIRED: WIN32 Constant library at http://akelpad.sourceforge.net/forum/viewtopic.php?p=9420#9420
 
-//! Окно редактора
+//! РћРєРЅРѕ СЂРµРґР°РєС‚РѕСЂР°
 var g_hAkelPad = AkelPad.GetMainWnd();
-//! Прокси системных вызовов
+//! РџСЂРѕРєСЃРё СЃРёСЃС‚РµРјРЅС‹С… РІС‹Р·РѕРІРѕРІ
 var oSys=AkelPad.SystemFunction();
-//! Модуль плагина
+//! РњРѕРґСѓР»СЊ РїР»Р°РіРёРЅР°
 var g_hModuleDll = AkelPad.GetInstanceDll();
-//! Флаг завершения обработы скрипта
+//! Р¤Р»Р°Рі Р·Р°РІРµСЂС€РµРЅРёСЏ РѕР±СЂР°Р±РѕС‚С‹ СЃРєСЂРёРїС‚Р°
 var QuitMutext = false;
 var oSet=AkelPad.ScriptSettings()
 //! Shell
 //var WshShell=new ActiveXObject("WScript.shell");
 
-//! Константы используемые системными вызовами
+//! РљРѕРЅСЃС‚Р°РЅС‚С‹ РёСЃРїРѕР»СЊР·СѓРµРјС‹Рµ СЃРёСЃС‚РµРјРЅС‹РјРё РІС‹Р·РѕРІР°РјРё
 AkelPad.Include("win32\\user32.js");
 AkelPad.Include("win32\\comctl32.js");
 
-//! Панелька
+//! РџР°РЅРµР»СЊРєР°
 var g_pDock = 0;
-//! Окно панельки
+//! РћРєРЅРѕ РїР°РЅРµР»СЊРєРё
 var g_hDockWnd = 0;
-//! Класс окна панельки
+//! РљР»Р°СЃСЃ РѕРєРЅР° РїР°РЅРµР»СЊРєРё
 var DOCKCLASSNAME = "WNDCLS_"+WScript.ScriptBaseName;
-//! Для удобства
+//! Р”Р»СЏ СѓРґРѕР±СЃС‚РІР°
 var lb_hist			= 0;
 /////
 var ttwnd = 0;
@@ -87,7 +88,7 @@ var _PERSIST = 0;
 var _FILTER = "";
 var _APPLY = 0;
 
-//! Идентификаторы элементов управления на панельке
+//! РРґРµРЅС‚РёС„РёРєР°С‚РѕСЂС‹ СЌР»РµРјРµРЅС‚РѕРІ СѓРїСЂР°РІР»РµРЅРёСЏ РЅР° РїР°РЅРµР»СЊРєРµ
 var IDC_DNDST	= 1000;
 var IDC_HIDE	= 1001
 var IDC_EXIT	= 1002;
@@ -132,17 +133,17 @@ layout[IDC_HKSH]	={sf:1,c:HOTKEY_CLASS,	t:"",					wse:0,ws:WS_CHILD|WS_VISIBLE|W
 					x:{W:0,H:0,G:1,B:0},  y:{W:0,H:1,G:-1,B:-1},w:{W:1,H:0,G:-2,B:-1},h:{W:0,H:0,G:0,B:1},  tt:"HK Show/Hide"};
 layout[IDC_HKBSH]	={sf:0,c:"BUTTON",		t:"",					wse:0,ws:WS_CHILD|WS_VISIBLE|WS_TABSTOP|BS_PUSHBUTTON,hwnd:0,
 					x:{W:1,H:0,G:-1,B:-1},y:{W:0,H:1,G:-1,B:-1},w:{W:0,H:0,G:0,B:1},  h:{W:0,H:0,G:0,B:1},  tt:"HK Show/Hide set"};
-//! Названия функций
+//! РќР°Р·РІР°РЅРёСЏ С„СѓРЅРєС†РёР№
 var rott = "Reopen Last";
 var rota = "Reopen All";
 var showhide = "Show/Hide";
-//! Хранилище истории
+//! РҐСЂР°РЅРёР»РёС‰Рµ РёСЃС‚РѕСЂРёРё
 var history		= HList();
 var CBC_OPENTOP = 0;
 var CBC_OPENALL = 1;
 var CBC_SHOWHIDE = 2;
 
-//! Взято из AkelDLL.h
+//! Р’Р·СЏС‚Рѕ РёР· AkelDLL.h
 var DKS_LEFT	=1
 var DKS_RIGHT	=2
 var DKS_TOP		=3
@@ -208,8 +209,8 @@ var WSC_MAINPROC	= 1;
 var WSC_EDITPROC	= 2;
 var WSC_FRAMEPROC  = 3;
 
-//// РАБОЧИЕ ФУНКЦИИ
-//! Создаёт панельку
+//// Р РђР‘РћР§РР• Р¤РЈРќРљР¦РР
+//! РЎРѕР·РґР°С‘С‚ РїР°РЅРµР»СЊРєСѓ
 function CreateDock()
 {
 	var pDock = AkelPad.MemAlloc(52/*sizeof(DOCK)*/);
@@ -258,10 +259,10 @@ function CreateDock()
 	}
 	else return 0;
 }
-//! Хук главного окна.
+//! РҐСѓРє РіР»Р°РІРЅРѕРіРѕ РѕРєРЅР°.
 function AkelPadCallBack(hwnd,umsg,wparam,lparam)
 {
-	//! Нотификция о закрытии редактора
+	//! РќРѕС‚РёС„РёРєС†РёСЏ Рѕ Р·Р°РєСЂС‹С‚РёРё СЂРµРґР°РєС‚РѕСЂР°
 	if(umsg == AKDN_MAIN_ONFINISH)
 	{
 		AkelPad.SendMessage(g_hDockWnd, WM_CLOSE, 0, 0);
@@ -270,7 +271,7 @@ function AkelPadCallBack(hwnd,umsg,wparam,lparam)
 			oSys.Call("kernel32::SwitchToThread");
 		}
 	}
-	//! Закладку закрыли
+	//! Р—Р°РєР»Р°РґРєСѓ Р·Р°РєСЂС‹Р»Рё
 	if(umsg == AKDN_FRAME_DESTROY)
 	{
 		var addr = AkelPad.SendMessage(g_hAkelPad, AKD_GETFRAMEINFO, FI_FILEW, lparam );
@@ -297,14 +298,11 @@ function AkelPadCallBack(hwnd,umsg,wparam,lparam)
 			}
 		}
 	}
-	//! Открыли документ. Нужно его убрать из списка закрытых, если есть такой
+	//! РћС‚РєСЂС‹Р»Рё РґРѕРєСѓРјРµРЅС‚. РќСѓР¶РЅРѕ РµРіРѕ СѓР±СЂР°С‚СЊ РёР· СЃРїРёСЃРєР° Р·Р°РєСЂС‹С‚С‹С…, РµСЃР»Рё РµСЃС‚СЊ С‚Р°РєРѕР№
 	if(umsg == AKDN_OPENDOCUMENT_FINISH && lparam == EOD_SUCCESS)
 	{
-		var ei = AkelPad.MemAlloc(sizeof_EDITINFO);
-		AkelPad.SendMessage(g_hAkelPad, AKD_GETEDITINFO, wparam, ei);
-		var addr = AkelPad.MemRead(ei + 2*(_X64?8:4), DT_QWORD);
+		var addr = AkelPad.SendMessage(g_hAkelPad, AKD_GETFRAMEINFO, FI_FILEW, wparam);
 		var file = AkelPad.MemRead(addr, _TSTR);
-		AkelPad.MemFree(ei);
 		var i =0;
 		file = file.toLowerCase();
 		var ids = [];
@@ -341,7 +339,7 @@ function AkelPadCallBack(hwnd,umsg,wparam,lparam)
 	}
 	return 0;
 }
-//! События в списке
+//! РЎРѕР±С‹С‚РёСЏ РІ СЃРїРёСЃРєРµ
 function ListSubClass(hwnd,umsg,wparam,lparam)
 {
 	if(umsg == WM_KEYDOWN)
@@ -349,7 +347,7 @@ function ListSubClass(hwnd,umsg,wparam,lparam)
 		var mod = GetKeyState(VK_SHIFT) && GetKeyState(VK_CONTROL) && GetKeyState(VK_MENU);
 		if(! mod)
 		{
-			//! Нажали на в списке - открыть его
+			//! РќР°Р¶Р°Р»Рё РЅР° РІ СЃРїРёСЃРєРµ - РѕС‚РєСЂС‹С‚СЊ РµРіРѕ
 			if(wparam == VK_RETURN || wparam == VK_SPACE)
 			{
 				var ind = AkelPad.SendMessage(lb_hist, LB_GETCURSEL, 0, 0);
@@ -365,20 +363,20 @@ function ListSubClass(hwnd,umsg,wparam,lparam)
 	}
 	else if (umsg == WM_GETDLGCODE)
 	{
-		//! Да, мы хотим обрабатывать все нажатия клавиш
+		//! Р”Р°, РјС‹ С…РѕС‚РёРј РѕР±СЂР°Р±Р°С‚С‹РІР°С‚СЊ РІСЃРµ РЅР°Р¶Р°С‚РёСЏ РєР»Р°РІРёС€
 		return DLGC_WANTALLKEYS;
 	}
 	return 0;
 }
-//! Оконная процедура панельки
+//! РћРєРѕРЅРЅР°СЏ РїСЂРѕС†РµРґСѓСЂР° РїР°РЅРµР»СЊРєРё
 function DockWindowProc(hwnd, umsg, wparam,lparam)
 {
-	//! Панельку создают
+	//! РџР°РЅРµР»СЊРєСѓ СЃРѕР·РґР°СЋС‚
 	if(umsg == WM_CREATE)
 	{
 		var font = oSys.Call("gdi32::GetStockObject", 17);
 		ttwnd = CreateToolTipControl(hwnd);
-		//! Создать все контролы
+		//! РЎРѕР·РґР°С‚СЊ РІСЃРµ РєРѕРЅС‚СЂРѕР»С‹
 		var wia = [IDC_DNDST,IDC_HIDE,IDC_EXIT,IDC_FILT,IDC_APPLY,IDC_HIST,IDC_PERSIST,IDC_CNOE,IDC_HKT,IDC_HKA,IDC_HKSH,IDC_HKBT,IDC_HKBA,IDC_HKBSH];
 		for(var ci in wia)
 		{
@@ -396,21 +394,21 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 			AddToolTip(ttwnd,hwnd,layout[id].hwnd,layout[id].tt);
 		}
 		lb_hist = layout[IDC_HIST].hwnd;
-		//! Настройка агрегатора горячих клавиш
+		//! РќР°СЃС‚СЂРѕР№РєР° Р°РіСЂРµРіР°С‚РѕСЂР° РіРѕСЂСЏС‡РёС… РєР»Р°РІРёС€
 		AkelPad.SendMessage(layout[IDC_HKT].hwnd,HKM_SETRULES,0, HOTKEYF_ALT|HOTKEYF_CONTROL|HOTKEYF_SHIFT);
 		AkelPad.SendMessage(layout[IDC_HKA].hwnd,HKM_SETRULES,0, HOTKEYF_ALT|HOTKEYF_CONTROL|HOTKEYF_SHIFT);
 		AkelPad.SendMessage(layout[IDC_HKSH].hwnd,HKM_SETRULES,0, HOTKEYF_ALT|HOTKEYF_CONTROL|HOTKEYF_SHIFT);
 		AkelPad.SendMessage(layout[IDC_HKT].hwnd,HKM_SETHOTKEY,_HK_RT, 0);
 		AkelPad.SendMessage(layout[IDC_HKA].hwnd,HKM_SETHOTKEY,_HK_RA, 0);
 		AkelPad.SendMessage(layout[IDC_HKSH].hwnd,HKM_SETHOTKEY,_HK_SH, 0);
-		//! Рисовать кнопку закрытия
+		//! Р РёСЃРѕРІР°С‚СЊ РєРЅРѕРїРєСѓ Р·Р°РєСЂС‹С‚РёСЏ
 		var memBD = AkelPad.MemAlloc(16/*sizeof BUTTONDRAW*/);
 		AkelPad.MemCopy(memBD+0, BIF_CROSS|BIF_ETCHED, DT_DWORD);
 		AkelPad.SendMessage(g_hAkelPad, AKD_SETBUTTONDRAW, layout[IDC_EXIT].hwnd, memBD);
 		AkelPad.MemCopy(memBD+0, BIF_DOWNARROW|BIF_ETCHED, DT_DWORD);
 		AkelPad.SendMessage(g_hAkelPad, AKD_SETBUTTONDRAW, layout[IDC_HIDE].hwnd, memBD);
 		AkelPad.MemFree(memBD);
-		//! Сабкласим список, нужен перехват клавиш VK_RETURN и VK_SPACE
+		//! РЎР°Р±РєР»Р°СЃРёРј СЃРїРёСЃРѕРє, РЅСѓР¶РµРЅ РїРµСЂРµС…РІР°С‚ РєР»Р°РІРёС€ VK_RETURN Рё VK_SPACE
 		AkelPad.WindowSubClass(lb_hist, ListSubClass, WM_KEYDOWN, WM_GETDLGCODE);
 		AkelPad.SendMessage(layout[IDC_APPLY].hwnd, BM_SETCHECK, _APPLY?BST_CHECKED:BST_UNCHECKED, 0);
 		AkelPad.SendMessage(layout[IDC_PERSIST].hwnd, BM_SETCHECK, _PERSIST?BST_CHECKED:BST_UNCHECKED, 0);
@@ -420,7 +418,7 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 	}
 	else if(umsg == WM_KEYDOWN)
 	{
-		//! Перехват клавиш Escape на окне
+		//! РџРµСЂРµС…РІР°С‚ РєР»Р°РІРёС€ Escape РЅР° РѕРєРЅРµ
 		var mod = GetKeyState(VK_SHIFT) && GetKeyState(VK_CONTROL) && GetKeyState(VK_MENU);
 		if(! mod)
 		{
@@ -432,7 +430,7 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 	}
 	else if(umsg == WM_SETFOCUS)
 	{
-		//! Фокус на список
+		//! Р¤РѕРєСѓСЃ РЅР° СЃРїРёСЃРѕРє
 		SetFocus(lb_hist);
 	}
 	else if(umsg == WM_COMMAND)
@@ -450,7 +448,7 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 			}
 			if(IDC == IDC_EXIT)
 			{
-				//! Нажата кнопка выйти.
+				//! РќР°Р¶Р°С‚Р° РєРЅРѕРїРєР° РІС‹Р№С‚Рё.
 				AkelPad.SendMessage(hwnd,WM_CLOSE, 0, 0);
 			}
 			if(IDC == IDC_HIDE)
@@ -469,50 +467,50 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 			}
 			if(IDC == IDC_HKBT)
 			{
-				//! Применить новую гор.кл. открыть последнее
+				//! РџСЂРёРјРµРЅРёС‚СЊ РЅРѕРІСѓСЋ РіРѕСЂ.РєР». РѕС‚РєСЂС‹С‚СЊ РїРѕСЃР»РµРґРЅРµРµ
 				var r = AkelPad.SendMessage(layout[IDC_HKT].hwnd , HKM_GETHOTKEY, 0, 0);
-				//! Только если изменилось
+				//! РўРѕР»СЊРєРѕ РµСЃР»Рё РёР·РјРµРЅРёР»РѕСЃСЊ
 				if(r != _HK_RT)
 				{
-					//! Запомнить
+					//! Р—Р°РїРѕРјРЅРёС‚СЊ
 					_HK_RT = r;
-					//! Удалить старую
+					//! РЈРґР°Р»РёС‚СЊ СЃС‚Р°СЂСѓСЋ
 					DelFunction(func_opentop);
-					//! Сделать новую
+					//! РЎРґРµР»Р°С‚СЊ РЅРѕРІСѓСЋ
 					func_opentop = AddFunction(rott,_HK_RT,HK_CallBackAddr,CBC_OPENTOP);
-					//! Сохранить
+					//! РЎРѕС…СЂР°РЅРёС‚СЊ
 					WRITE_SETTINGS();
 				}
 			}
 			if(IDC == IDC_HKBA)
 			{
-				//! Применить новую гор.кл. открыть все
+				//! РџСЂРёРјРµРЅРёС‚СЊ РЅРѕРІСѓСЋ РіРѕСЂ.РєР». РѕС‚РєСЂС‹С‚СЊ РІСЃРµ
 				var r = AkelPad.SendMessage(layout[IDC_HKA].hwnd, HKM_GETHOTKEY, 0, 0);
 				if(r != _HK_RA)
 				{
-					//! Запомнить
+					//! Р—Р°РїРѕРјРЅРёС‚СЊ
 					_HK_RA = r;
-					//! Удалить старую
+					//! РЈРґР°Р»РёС‚СЊ СЃС‚Р°СЂСѓСЋ
 					DelFunction(func_openall);
-					//! Сделать новую
+					//! РЎРґРµР»Р°С‚СЊ РЅРѕРІСѓСЋ
 					func_openall = AddFunction(rota,_HK_RA,HK_CallBackAddr,CBC_OPENALL);
-					//! Сохранить
+					//! РЎРѕС…СЂР°РЅРёС‚СЊ
 					WRITE_SETTINGS();
 				}
 			}
 			if(IDC == IDC_HKBSH)
 			{
-				//! Применить новую гор.кл. открыть все
+				//! РџСЂРёРјРµРЅРёС‚СЊ РЅРѕРІСѓСЋ РіРѕСЂ.РєР». РѕС‚РєСЂС‹С‚СЊ РІСЃРµ
 				var r = AkelPad.SendMessage(layout[IDC_HKSH].hwnd, HKM_GETHOTKEY, 0, 0);
 				if(r != _HK_SH)
 				{
-					//! Запомнить
+					//! Р—Р°РїРѕРјРЅРёС‚СЊ
 					_HK_SH = r;
-					//! Удалить старую
+					//! РЈРґР°Р»РёС‚СЊ СЃС‚Р°СЂСѓСЋ
 					DelFunction(func_showhide);
-					//! Сделать новую
+					//! РЎРґРµР»Р°С‚СЊ РЅРѕРІСѓСЋ
 					func_showhide = AddFunction(showhide,_HK_SH,HK_CallBackAddr,CBC_SHOWHIDE);
-					//! Сохранить
+					//! РЎРѕС…СЂР°РЅРёС‚СЊ
 					WRITE_SETTINGS();
 				}
 			}
@@ -534,16 +532,16 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 		}
 		if(CODE == LBN_DBLCLK)
 		{
-			//! Двойной клик на списке
+			//! Р”РІРѕР№РЅРѕР№ РєР»РёРє РЅР° СЃРїРёСЃРєРµ
 			if(IDC == IDC_HIST)
 			{
 				var ind = AkelPad.SendMessage(lb_hist, LB_GETCURSEL, 0, 0);
-				//! По чем кликнули
+				//! РџРѕ С‡РµРј РєР»РёРєРЅСѓР»Рё
 				if(ind != LB_ERR)
 				{
 					var id = AkelPad.SendMessage(lb_hist, LB_GETITEMDATA, ind, 0);
 					AkelPad.SendMessage(lb_hist, LB_DELETESTRING, ind, 0);
-					//! Переоткрыть это
+					//! РџРµСЂРµРѕС‚РєСЂС‹С‚СЊ СЌС‚Рѕ
 					DoReopen(id);
 				}
 			}
@@ -572,7 +570,7 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 	}
 	else if(umsg == WM_SIZE)
 	{
-		//! Меняем Drag&Drob область за размером панельки
+		//! РњРµРЅСЏРµРј Drag&Drob РѕР±Р»Р°СЃС‚СЊ Р·Р° СЂР°Р·РјРµСЂРѕРј РїР°РЅРµР»СЊРєРё
 		if(g_pDock)
 		{
 //			GetWindowRect(g_hDockWnd,g_pDock+36);
@@ -584,11 +582,11 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 //			_W = szR-szL;
 			_H=HIWORD(lparam);
 			_W=LOWORD(lparam);
-			//! Взять положение надписи
+			//! Р’Р·СЏС‚СЊ РїРѕР»РѕР¶РµРЅРёРµ РЅР°РґРїРёСЃРё
 			var pos = GetControlPos(_W,_H,IDC_DNDST);
 			if(_FULLDND)
 			{
-				//! Если тягаем за всю панельку
+				//! Р•СЃР»Рё С‚СЏРіР°РµРј Р·Р° РІСЃСЋ РїР°РЅРµР»СЊРєСѓ
 				AkelPad.MemCopy(g_pDock+36, 0, DT_DWORD);
 				AkelPad.MemCopy(g_pDock+40, 0, DT_DWORD);
 				AkelPad.MemCopy(g_pDock+44, _W, DT_DWORD);
@@ -596,15 +594,15 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 			}
 			else
 			{
-				//! Если тягаем только за надпись
+				//! Р•СЃР»Рё С‚СЏРіР°РµРј С‚РѕР»СЊРєРѕ Р·Р° РЅР°РґРїРёСЃСЊ
 				AkelPad.MemCopy(g_pDock+36, pos.x, DT_DWORD);
 				AkelPad.MemCopy(g_pDock+40, pos.y, DT_DWORD);
 				AkelPad.MemCopy(g_pDock+44, pos.x+pos.w, DT_DWORD);
 				AkelPad.MemCopy(g_pDock+48, pos.y+pos.h, DT_DWORD);
 			}
-			//! Запомним новое состояние
+			//! Р—Р°РїРѕРјРЅРёРј РЅРѕРІРѕРµ СЃРѕСЃС‚РѕСЏРЅРёРµ
 			WRITE_SETTINGS();
-			//! Переразместим контролы
+			//! РџРµСЂРµСЂР°Р·РјРµСЃС‚РёРј РєРѕРЅС‚СЂРѕР»С‹
 			for(var ci in layout)
 			{
 				pos = GetControlPos(_W,_H,ci);
@@ -614,7 +612,7 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 	}
 	else if(umsg == WM_CLOSE)
 	{
-		//! Нас закрывают.
+		//! РќР°СЃ Р·Р°РєСЂС‹РІР°СЋС‚.
 		DestroyWindow(hwnd);
 		return 1;
 	}
@@ -622,7 +620,7 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 	{
 		if(ttwnd!=0)
 			DestroyWindow(ttwnd);
-		//! Закрыли нас.
+		//! Р—Р°РєСЂС‹Р»Рё РЅР°СЃ.
 		_SIDE = AkelPad.MemRead(g_pDock+16, DT_DWORD);
 		WRITE_SETTINGS();
 		AkelPad.SendMessage(g_hAkelPad,AKD_DOCK,DK_UNSUBCLASS,g_pDock);
@@ -630,9 +628,9 @@ function DockWindowProc(hwnd, umsg, wparam,lparam)
 		g_pDock = 0;
 		AkelPad.SendMessage(g_hAkelPad, AKD_RESIZE, 0, 0);
 		g_hDockWnd = 0;
-		//! Отпускаем список
+		//! РћС‚РїСѓСЃРєР°РµРј СЃРїРёСЃРѕРє
 		AkelPad.WindowUnsubClass(lb_hist);
-		//! Выйти из цикла
+		//! Р’С‹Р№С‚Рё РёР· С†РёРєР»Р°
 		PostQuitMessage(0);
 		return 0;
 	}
@@ -701,30 +699,30 @@ if(FirstInstance(smartrun))
 	READ_SETTINGS();
 	layout[IDC_HIST].wse = _ELSE;
 	layout[IDC_FILT].t = _FILTER;
-	//! Регистрируем класс окна
+	//! Р РµРіРёСЃС‚СЂРёСЂСѓРµРј РєР»Р°СЃСЃ РѕРєРЅР°
 	var res = AkelPad.WindowRegisterClass(DOCKCLASSNAME);
 
-	//! Создаем панельку
+	//! РЎРѕР·РґР°РµРј РїР°РЅРµР»СЊРєСѓ
 	if(CreateDock())
 	{
 		AkelPad.SendMessage(g_hAkelPad, AKD_DOCK, _HIDE?DK_HIDE:DK_SHOW, g_pDock);
-		//! Создаем функции быстрого вызова
+		//! РЎРѕР·РґР°РµРј С„СѓРЅРєС†РёРё Р±С‹СЃС‚СЂРѕРіРѕ РІС‹Р·РѕРІР°
 		HK_CallBackAddr	= oSys.RegisterCallback(HK_CallBack);
 		func_opentop = AddFunction(rott,_HK_RT,HK_CallBackAddr,CBC_OPENTOP);
 		func_openall = AddFunction(rota,_HK_RA,HK_CallBackAddr,CBC_OPENALL);
 		func_showhide = AddFunction(showhide,_HK_SH,HK_CallBackAddr,CBC_SHOWHIDE);
-		//! Сабкласим главное окно
+		//! РЎР°Р±РєР»Р°СЃРёРј РіР»Р°РІРЅРѕРµ РѕРєРЅРѕ
 		if(AkelPad.WindowSubClass( WSC_MAINPROC, AkelPadCallBack, AKDN_OPENDOCUMENT_FINISH, AKDN_MAIN_ONFINISH, AKDN_FRAME_DESTROY))
 		{
-			//! Мы инициализировались, можно дать работать другим скриптам
+			//! РњС‹ РёРЅРёС†РёР°Р»РёР·РёСЂРѕРІР°Р»РёСЃСЊ, РјРѕР¶РЅРѕ РґР°С‚СЊ СЂР°Р±РѕС‚Р°С‚СЊ РґСЂСѓРіРёРј СЃРєСЂРёРїС‚Р°Рј
 			AkelPad.ScriptNoMutex();
-			//! Поток в цикл сообщений
+			//! РџРѕС‚РѕРє РІ С†РёРєР» СЃРѕРѕР±С‰РµРЅРёР№
 			AkelPad.WindowGetMessage();
-			//! Вышли(только по закрытии панельки)
+			//! Р’С‹С€Р»Рё(С‚РѕР»СЊРєРѕ РїРѕ Р·Р°РєСЂС‹С‚РёРё РїР°РЅРµР»СЊРєРё)
 			AkelPad.WindowUnsubClass( WSC_MAINPROC );
-			//! Сняли хук
+			//! РЎРЅСЏР»Рё С…СѓРє
 		}
-		//! Функции нужно удалить
+		//! Р¤СѓРЅРєС†РёРё РЅСѓР¶РЅРѕ СѓРґР°Р»РёС‚СЊ
 		DelFunction(func_opentop);
 		DelFunction(func_openall);
 		DelFunction(func_showhide);
@@ -732,35 +730,35 @@ if(FirstInstance(smartrun))
 		if(g_hDockWnd != 0)
 		{
 			//AkelPad.MessageBox(0, "Text", "Caption", 0 /*MB_OK*/);
-			//! По идее сюда не попадем
+			//! РџРѕ РёРґРµРµ СЃСЋРґР° РЅРµ РїРѕРїР°РґРµРј
 			AkelPad.SendMessage(g_hDockWnd, WM_CLOSE, 0, 0);
 			g_hDockWnd = 0;
 		}
 	}
-	//! Класс долой
+	//! РљР»Р°СЃСЃ РґРѕР»РѕР№
 	AkelPad.WindowUnregisterClass(DOCKCLASSNAME);
-	//! Вернуть фокус
+	//! Р’РµСЂРЅСѓС‚СЊ С„РѕРєСѓСЃ
 	SetFocus(g_hAkelPad);
-	//! Взводим флаг разрешения выхода из скрипта.
+	//! Р’Р·РІРѕРґРёРј С„Р»Р°Рі СЂР°Р·СЂРµС€РµРЅРёСЏ РІС‹С…РѕРґР° РёР· СЃРєСЂРёРїС‚Р°.
 	QuitMutext = true;
 }
-//! Переоткрывет указаный файл из списка
+//! РџРµСЂРµРѕС‚РєСЂС‹РІРµС‚ СѓРєР°Р·Р°РЅС‹Р№ С„Р°Р№Р» РёР· СЃРїРёСЃРєР°
 function DoReopen(id)
 {
 	if(id == 0) return;
 	var file = history.GetItem(id).value;
-	//! Открыть
+	//! РћС‚РєСЂС‹С‚СЊ
 	AkelPad.OpenFile(file);
 	history.RemoveId(id);
 }
-//! Обработчик горячей клавиши
+//! РћР±СЂР°Р±РѕС‚С‡РёРє РіРѕСЂСЏС‡РµР№ РєР»Р°РІРёС€Рё
 function HK_CallBack(regparam,callparam,support)
 {
 	var task=regparam;
 	if(task == CBC_OPENALL)
 	{
 		var str;
-		//! Открыть все
+		//! РћС‚РєСЂС‹С‚СЊ РІСЃРµ
 		while(history.GetCount()>0)
 		{
 			var id = history.GetTop();
@@ -772,7 +770,7 @@ function HK_CallBack(regparam,callparam,support)
 	if(task == CBC_OPENTOP)
 	{
 		var id = history.GetTop();
-		//! Открыть последнее
+		//! РћС‚РєСЂС‹С‚СЊ РїРѕСЃР»РµРґРЅРµРµ
 		if(id != 0)
 		{
 			DoReopen(id);
@@ -806,7 +804,7 @@ function HK_CallBack(regparam,callparam,support)
 		WRITE_SETTINGS();
 	}
 }
-//! Вернуть позицию указанного контрола по размеру панельки
+//! Р’РµСЂРЅСѓС‚СЊ РїРѕР·РёС†РёСЋ СѓРєР°Р·Р°РЅРЅРѕРіРѕ РєРѕРЅС‚СЂРѕР»Р° РїРѕ СЂР°Р·РјРµСЂСѓ РїР°РЅРµР»СЊРєРё
 function GetControlPos(W,H,what)
 {
 	var r = {"x":0,"y":0,"w":W,"h":H};
@@ -859,7 +857,7 @@ function DelFunction(prs)
 {
 	AkelPad.SendMessage(g_hAkelPad, AKD_DLLDELETE, 0, prs);
 }
-//! Записать настройки скрипта
+//! Р—Р°РїРёСЃР°С‚СЊ РЅР°СЃС‚СЂРѕР№РєРё СЃРєСЂРёРїС‚Р°
 function WRITE_SETTINGS()
 {
 	oSet.Begin(WScript.ScriptBaseName, 0x2 /*POB_SAVE*/);
@@ -884,7 +882,7 @@ function WRITE_SETTINGS()
 	oSet.Write("APPLY", PO_DWORD, _APPLY);
 	oSet.End();
 }
-//! Прочитать настройки скрипта
+//! РџСЂРѕС‡РёС‚Р°С‚СЊ РЅР°СЃС‚СЂРѕР№РєРё СЃРєСЂРёРїС‚Р°
 function READ_SETTINGS()
 {
 	oSet.Begin(WScript.ScriptBaseName, 0x1 /*POB_READ*/);
@@ -908,13 +906,13 @@ function READ_SETTINGS()
 	_APPLY = oSet.Read("APPLY", PO_DWORD, 0);
 	oSet.End();
 }
-///// HELPERS: функции для упрощения системных вызовов
-//! Передвинуть окно
+///// HELPERS: С„СѓРЅРєС†РёРё РґР»СЏ СѓРїСЂРѕС‰РµРЅРёСЏ СЃРёСЃС‚РµРјРЅС‹С… РІС‹Р·РѕРІРѕРІ
+//! РџРµСЂРµРґРІРёРЅСѓС‚СЊ РѕРєРЅРѕ
 function MoveWindow(hwnd,x,y,w,h,repaint)
 {
 	oSys.Call("user32::MoveWindow",hwnd,x,y,w,h,repaint);
 }
-//! Поиск окна в пределах рабочего стола по родителю и имени класса
+//! РџРѕРёСЃРє РѕРєРЅР° РІ РїСЂРµРґРµР»Р°С… СЂР°Р±РѕС‡РµРіРѕ СЃС‚РѕР»Р° РїРѕ СЂРѕРґРёС‚РµР»СЋ Рё РёРјРµРЅРё РєР»Р°СЃСЃР°
 function FindWindowEx(hwndParent,lpszClassName)
 {
 	var memclass =0;
@@ -925,15 +923,15 @@ function FindWindowEx(hwndParent,lpszClassName)
 	AkelPad.MemFree(memclass);
 	return hwnd;
 }
-//! Установить текст окна
+//! РЈСЃС‚Р°РЅРѕРІРёС‚СЊ С‚РµРєСЃС‚ РѕРєРЅР°
 function SetWindowText(hwnd, text)
 {
 	return oSys.Call( "user32::SetWindowText"+_TCHAR, hwnd, text );
 }
-//! Создаёт окно
+//! РЎРѕР·РґР°С‘С‚ РѕРєРЅРѕ
 function CreateWindowEx(styleex,_class,title,style,x,y,cx,cy,parent,menu,lparam)
 {
-	//! Нативные строки
+	//! РќР°С‚РёРІРЅС‹Рµ СЃС‚СЂРѕРєРё
 	var mem_class = AkelPad.MemAlloc((_class.length+1)*_TSIZE);
 	AkelPad.MemCopy(mem_class, _class, _TSTR);
 	var mem_title = 0;
@@ -943,50 +941,50 @@ function CreateWindowEx(styleex,_class,title,style,x,y,cx,cy,parent,menu,lparam)
 		AkelPad.MemCopy(mem_title, title, _TSTR);
 	}
 	var hwnd = oSys.Call("user32::CreateWindowEx" + _TCHAR,
-							styleex,			//! Расширенный стиль
-							mem_class,			//! Класс окна
-							mem_title,			//! Заголовок окна
-							style,				//! Стиль окна
-							x,y,cx,cy,			//! Координаты и размер
-							parent, menu,		//! Родитель и меню(идентификатор)
-							g_hModuleDll,		//! принадлежность коду
-							lparam);			//! Доп. параметр
-	//! Освободить память
+							styleex,			//! Р Р°СЃС€РёСЂРµРЅРЅС‹Р№ СЃС‚РёР»СЊ
+							mem_class,			//! РљР»Р°СЃСЃ РѕРєРЅР°
+							mem_title,			//! Р—Р°РіРѕР»РѕРІРѕРє РѕРєРЅР°
+							style,				//! РЎС‚РёР»СЊ РѕРєРЅР°
+							x,y,cx,cy,			//! РљРѕРѕСЂРґРёРЅР°С‚С‹ Рё СЂР°Р·РјРµСЂ
+							parent, menu,		//! Р РѕРґРёС‚РµР»СЊ Рё РјРµРЅСЋ(РёРґРµРЅС‚РёС„РёРєР°С‚РѕСЂ)
+							g_hModuleDll,		//! РїСЂРёРЅР°РґР»РµР¶РЅРѕСЃС‚СЊ РєРѕРґСѓ
+							lparam);			//! Р”РѕРї. РїР°СЂР°РјРµС‚СЂ
+	//! РћСЃРІРѕР±РѕРґРёС‚СЊ РїР°РјСЏС‚СЊ
 	AkelPad.MemFree(mem_class);
 	if(mem_title!=0) AkelPad.MemFree(mem_title);
 	return hwnd;
 }
-//! Показать окно, SW_* константы
+//! РџРѕРєР°Р·Р°С‚СЊ РѕРєРЅРѕ, SW_* РєРѕРЅСЃС‚Р°РЅС‚С‹
 function ShowWindow(hwnd,how)
 {
 	return oSys.Call("user32::ShowWindow",hwnd,how);
 }
-//! Обновить окно
+//! РћР±РЅРѕРІРёС‚СЊ РѕРєРЅРѕ
 function UpdateWindow(hwnd)
 {
 	return oSys.Call("user32::UpdateWindow",hwnd);
 }
-//! Выйти из оконного цикла
+//! Р’С‹Р№С‚Рё РёР· РѕРєРѕРЅРЅРѕРіРѕ С†РёРєР»Р°
 function PostQuitMessage(code)
 {
 	return oSys.Call("user32::PostQuitMessage",code);
 }
-//! Уничтожить окно
+//! РЈРЅРёС‡С‚РѕР¶РёС‚СЊ РѕРєРЅРѕ
 function DestroyWindow(hwnd)
 {
 	return oSys.Call("user32::DestroyWindow",hwnd);
 }
-//! Получить размер окна
+//! РџРѕР»СѓС‡РёС‚СЊ СЂР°Р·РјРµСЂ РѕРєРЅР°
 function GetWindowRect(hwnd,rc)
 {
 	return oSys.Call("user32::GetWindowRect",hwnd,rc);
 }
-//! Дать фокус
+//! Р”Р°С‚СЊ С„РѕРєСѓСЃ
 function SetFocus(hwnd)
 {
 	return oSys.Call("user32::SetFocus",hwnd);
 }
-//! Получить состояние кнопки
+//! РџРѕР»СѓС‡РёС‚СЊ СЃРѕСЃС‚РѕСЏРЅРёРµ РєРЅРѕРїРєРё
 function GetKeyState(key)
 {
 	return oSys.Call("user32::GetKeyState",key);
