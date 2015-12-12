@@ -21,7 +21,7 @@
   <PropertyGroup Label="Globals">
     <ProjectGuid>{2C8E5F44-6648-4738-BA5B-7927075A70E6}</ProjectGuid>
     <RootNamespace>speech</RootNamespace>
-    <ProjectName>speech</ProjectName>
+    <ProjectName>Speech</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
