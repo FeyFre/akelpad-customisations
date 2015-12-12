@@ -1,6 +1,6 @@
 /**
  *		Templates for AkelPad
- *		Panych Y.W. aka FeyFre (c) 2010-2014 (panych.y@gmail.com)
+ *		Panych Y.V. aka FeyFre (c) 2010-2015 (panych.y@gmail.com)
  *
  *		This piece of software is distributed under BSD license.
  *		AkelPad is property of its copyright holders.
@@ -144,7 +144,7 @@ extern void __declspec(dllexport) DllAkelPadID(PLUGINVERSION *pv)
 {
 	pv->dwAkelDllVersion=AKELDLL;
 	pv->dwExeMinVersion3x=MAKE_IDENTIFIER(-1,-1,-1,-1);
-	pv->dwExeMinVersion4x=MAKE_IDENTIFIER( 4, 9, 1, 0);
+	pv->dwExeMinVersion4x=MAKE_IDENTIFIER( 4, 9, 7, 0);
 	pv->pPluginName="Templates";
 }
 extern void __declspec(dllexport) Main(PLUGINDATA *pd)
@@ -447,9 +447,9 @@ static void CALLCONV FillTreeCtrl(HWND hTreeCtrl, LPCWSTR szPath, HTREEITEM hRoo
 					tvi.item.iSelectedImage = sfis.iIcon;
 					tvi.item.mask = TVIF_TEXT|TVIF_PARAM|TVIF_IMAGE|TVIF_SELECTEDIMAGE;
 					hNode = TreeView_InsertItem(hTreeCtrl,&tvi);
-					//! Что-бы не "оптимизировало" в вызов memcpy пришлось установить опцию
-					//! компилятора "Inline Function Expansion" в /Ob1
-					//! На значение по-умолчанию "Default" в Win32 всё нормально, в x64 - вылазит memcpy
+					//! ШІм®Ў оЈ "п°Ій­Ёи©°пЈ м¬ў аЎўиЇў memcpy рђ±ЁмЇ± пїЅпїЅпїЅпїЅоЇўйіј п°¶йјЌ
+					//! лЇ¬рђ©«уЇ±  "Inline Function Expansion" ЮЇOb1
+					//! О  и® оЃљпїЅпїЅгЎЇм®іоЃ†пїЅпїЅ "Default" Я—in32 г±ё оЇ°о¬¬ Яё64 - гј«бЁЁрџ¬Ґmcpy
 					xmemcpy(szChild,szPath,nPathLen*sizeof(WCHAR));
 					i = nPathLen;
 					szChild[i]=L'\\'; i++;
@@ -937,7 +937,7 @@ static BOOL CALLCONV IsHighLightThemeAssigned(HWND hWnd)
 	LRESULT size = 0;
 	WCHAR *name = NULL;
 	if(!IsWindow(hWnd)) return FALSE;
-	hTheme = (AEHTHEME)SendMessageW(hWnd,AEM_HLGETTHEMEW,0,0);
+	hTheme = (AEHTHEME)SendMessageW(hWnd, AEM_HLFINDTHEME, AEHLFT_CURRENT, 0);
 	if(!hTheme) return FALSE;
 	name = (WCHAR*)PLUGIN_ALLOC(sizeof(WCHAR)*4096);
 	size = SendMessageW(hWnd,AEM_HLGETTHEMENAMEW,(WPARAM)hTheme,(LPARAM)name);
@@ -997,7 +997,7 @@ static void CALLCONV OpenTemplate(HWND hWnd, BOOL bInsert)
 						SendMessageW(hWnd,EM_SETSEL,(WPARAM)pos,(LPARAM)pos);
 						if(g_bCPFT)
 						{
-							SAVEDOCUMENTW sd = {L"",fc.nCodePage,fc.bBOM,SD_UPDATE};
+							SAVEDOCUMENTW sd = {L"",fc.nCodePage,fc.bBOM,SD_UPDATE,NULL};
 							SendMessageW(g_hMainWnd,AKD_SAVEDOCUMENTW,(WPARAM)hWnd,(LPARAM)&sd);
 						}
 						//! Reset modification flag
@@ -1074,6 +1074,7 @@ static void CALLCONV EditTemplate(BOOL bCreate)
 	od.dwFlags   = OD_ADT_DETECTBOM|OD_ADT_DETECTCODEPAGE;
 	od.nCodePage = 0;
 	od.bBOM      = 0;
+	od.hDoc      = NULL;
 	SendMessageW(g_hMainWnd, AKD_OPENDOCUMENTW, (WPARAM)NULL, (LPARAM)&od);
 	SendMessageW(g_hMainWnd, AKD_SETCMDLINEOPTIONS, lCmdLineOptions, 0);
 	CallCoder(g_szTemplate);

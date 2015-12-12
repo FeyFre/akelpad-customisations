@@ -8,7 +8,7 @@
   #define MAKE_IDENTIFIER(a, b, c, d)  ((DWORD)MAKELONG(MAKEWORD(a, b), MAKEWORD(c, d)))
 #endif
 
-#define AKELDLL MAKE_IDENTIFIER(2, 1, 0, 0)
+#define AKELDLL MAKE_IDENTIFIER(2, 2, 0, 0)
 
 
 //// Defines
@@ -67,10 +67,12 @@
 #define PCLE_OPENERROR   5  //Error occurred during file opening.
 #define PCLE_SAVEERROR   6  //Error occurred during file saving.
 
-//External parameters
-#define EXTPARAM_CHAR     1
-#define EXTPARAM_INT      2
-#define EXTPARAM_LPINT    3
+#ifndef _METHODFUNC_H_
+  //External parameters
+  #define EXTPARAM_CHAR     1
+  #define EXTPARAM_INT      2
+  #define EXTPARAM_VAR      3
+#endif
 
 //Expand flags
 #define EXPPARAM_WIDE      0x000 //EXPPARAM.pReplaceWith is Unicode string (default).
@@ -92,12 +94,13 @@
 
 //AKD_IFEXPRESSION errors
 #define IEE_SUCCESS            0
-#define IEE_NOCOMMA            1
+#define IEE_WRONGPARAMCOUNT    1
 #define IEE_NOCLOSEPARENTHESIS 2
 #define IEE_UNKNOWNOPERATOR    3
 #define IEE_UNKNOWNMETHOD      4
 #define IEE_CALLERROR          5
 #define IEE_NOFALSE            6
+#define IEE_NULLSTRING         7
 
 //MI_ONFINISH type
 #define MOF_NONE        0
@@ -131,6 +134,7 @@
 #define OD_REOPEN              0x00000100          //Don't create new MDI window, use the exited one.
 #define OD_NOSCROLL            0x00000200          //Don't restore scroll position.
 #define OD_MULTIFILE           0x00000400          //More documents is on queue. Use MB_YESNOCANCEL instead of MB_OKCANCEL.
+#define OD_NOUPDATE            0x00000800          //Don't update file info.
 
 //Open document errors
 #define EOD_SUCCESS              0          //Success.
@@ -664,20 +668,29 @@
 #define DLLSF_NOW     0x1  //Save plugins stack immediately.
 #define DLLSF_ONEXIT  0x2  //Save plugins stack on program exit.
 
+//AKDN_DLLCODER set active edit flags
+#define SAE_NOFOLD          0x01
+#define SAE_NOLIST          0x02
+#define SAE_RESETFOLD       0x04
+#define SAE_RESETLIST       0x08
+#define SAE_IGNOREMAXFOLDS  0x10
+
 //AKD_TRANSLATEMESSAGE types
-#define TMSG_GLOBAL       0x01  //Translate hotkey from global accelerator table (PLUGINDATA.hGlobalAccel).
-#define TMSG_DIALOG       0x02  //Translate message from modeless (see AKD_SETMODELESS) or dockable dialog (see AKD_DOCK).
-#define TMSG_PLUGIN       0x04  //Translate plugin message (see AKD_DLL*, AKD_CALLPROC, AKD_POSTMESSAGE).
-#define TMSG_HOTKEY       0x08  //Translate plugin hotkey.
-#define TMSG_ACCELERATOR  0x10  //Translate hotkey from main accelerator table (PLUGINDATA.hMainAccel).
-#define TMSG_DEFAULT      0x20  //Default message processing.
+#define TMSG_GLOBAL        0x01  //Translate hotkey from global accelerator table (PLUGINDATA.hGlobalAccel).
+#define TMSG_DIALOG        0x02  //Translate message from modeless (see AKD_SETMODELESS) or dockable dialog (see AKD_DOCK).
+#define TMSG_PLUGIN        0x04  //Translate plugin message (see AKD_DLL*, AKD_CALLPROC, AKD_POSTMESSAGE).
+#define TMSG_HOTKEY        0x08  //Translate plugin hotkey.
+#define TMSG_ACCELERATOR   0x10  //Translate hotkey from main accelerator table (PLUGINDATA.hMainAccel).
+#define TMSG_DEFAULT       0x20  //Default message processing.
+#define TMSG_HOTKEYGLOBAL  0x40  //Translate plugin global hotkey.
 
 #define TMSG_ALL  (TMSG_GLOBAL      |\
                    TMSG_DIALOG      |\
                    TMSG_PLUGIN      |\
                    TMSG_HOTKEY      |\
                    TMSG_ACCELERATOR |\
-                   TMSG_DEFAULT)
+                   TMSG_DEFAULT     |\
+                   TMSG_HOTKEYGLOBAL)
 
 //Context menu owner
 #define NCM_EDIT     1  //Edit control.
@@ -698,11 +711,13 @@
 #define FWF_TABNEXT        9  //Retrieve next tab item frame data. lParam is a frame data pointer.
 #define FWF_TABPREV        10 //Retrieve previous tab item frame data. lParam is a frame data pointer.
 
-//AKD_FRAMEACTIVATE and AKDN_FRAME_ACTIVATE flags
+//AKD_FRAMEACTIVATE, AKDN_FRAME_ACTIVATE, AKDN_FRAME_DEACTIVATE flags
 #define FWA_NOUPDATEORDER         0x00000001  //Don't update access order during activating.
 #define FWA_NOUPDATEEDIT          0x00000002  //For WMD_PMDI mode. Don't redraw edit control area during activating.
 #define FWA_NOVISUPDATE           0x00000004  //For WMD_PMDI mode. Don't make any visual updates during activating. Use it only if you later will activate back frame that has lost active status.
-                                              //AKDN_FRAME_ACTIVATE only flags:
+#define FWA_NEXT                  0x00000010  //Activate next frame.
+#define FWA_PREV                  0x00000020  //Activate previous frame.
+                                              //AKDN_FRAME_ACTIVATE, AKDN_FRAME_DEACTIVATE only flags:
 #define FWA_NOTIFY_CREATE         0x00000100  //Frame activating after creation.
 #define FWA_NOTIFY_BEFOREDESTROY  0x00000200  //Frame activating for destroying.
 #define FWA_NOTIFY_AFTERDESTROY   0x00000400  //Previous frame activating because current one has been destroyed.
@@ -719,6 +734,7 @@
 #define FWS_COUNTMODIFIED 1  //Count of modified windows.
 #define FWS_COUNTSAVED    2  //Count of unmodified windows.
 #define FWS_CURSEL        3  //Active window zero based index.
+#define FWS_COUNTNAMED    4  //Count of named windows.
 
 //Lock inherit new document settings from current document
 #define LI_FONT           0x00000001  //Lock inherit font.
@@ -772,21 +788,46 @@
 #define RCS_DETECTONLY   0x00000001  //Don't do text replacement, only detect codepages.
 
 //AKD_GETMODELESS types
-#define MLT_NONE     0 //No registered modeless dialog open.
-#define MLT_CUSTOM   1 //Dialog registered with AKD_SETMODELESS.
-#define MLT_RECODE   2 //Recode dialog.
-#define MLT_FIND     3 //Find dialog.
-#define MLT_REPLACE  4 //Replace dialog.
-#define MLT_GOTO     5 //Go to dialog.
+#define MLT_NONE      0 //No modeless dialog.
+#define MLT_CUSTOM    1 //Single dialog registered with AKD_SETMODELESS.
+#define MLT_RECODE    2 //Single recode dialog.
+#define MLT_FIND      3 //Single find dialog.
+#define MLT_REPLACE   4 //Single replace dialog.
+#define MLT_GOTO      5 //Single go to dialog.
+#define MLT_STACK    10 //Dialog handle is in stack.
 
-//DIALOGRESIZEMSG flags
-#define DRM_PAINTSIZEGRIP 0x2 //Draw resize grid.
+//AKD_SETMODELESS action
+#define MLA_SINGLE   0 //Register single modeless dialog.
+#define MLA_ADD      1 //Add dialog handle to stack.
+#define MLA_DELETE   2 //Delete dialog handle from stack.
+#define MLA_CLEAR    3 //Clear dialog handles stack.
 
-//DIALOGRESIZE type
-#define DRS_SIZE  0x1 //Resize control. Can be combined with DRS_X ot DRS_Y.
-#define DRS_MOVE  0x2 //Move control. Can be combined with DRS_X ot DRS_Y.
-#define DRS_X     0x4 //X value. Can be combined with DRS_SIZE ot DRS_MOVE.
-#define DRS_Y     0x8 //Y value. Can be combined with DRS_SIZE ot DRS_MOVE.
+//AKDN_INITDIALOGBEGIN and AKDN_INITDIALOGEND types
+#define IDT_OPENFILE       1  //NINITDIALOG.lParam is a pointer to a DIALOGCODEPAGE structure.
+#define IDT_SAVEFILE       2  //NINITDIALOG.lParam is a pointer to a DIALOGCODEPAGE structure.
+#define IDT_SAVEALLAS      3  //NINITDIALOG.lParam not used.
+#define IDT_PAGESETUP      4  //NINITDIALOG.lParam not used.
+#define IDT_PRINTPREVIEW   5  //NINITDIALOG.lParam not used.
+#define IDT_FIND           6  //NINITDIALOG.lParam not used.
+#define IDT_REPLACE        7  //NINITDIALOG.lParam not used.
+#define IDT_GOTO           8  //NINITDIALOG.lParam not used.
+#define IDT_RECODE         9  //NINITDIALOG.lParam not used.
+#define IDT_COLORS         10 //NINITDIALOG.lParam not used.
+#define IDT_PLUGINS        11 //NINITDIALOG.lParam not used.
+#define IDT_MDILIST        12 //NINITDIALOG.lParam not used.
+#define IDT_ABOUT          13 //NINITDIALOG.lParam not used.
+
+#ifndef _RESIZEFUNC_H_
+  //RESIZEDIALOGMSG flags
+  #define RDM_PAINTSIZEGRIP 0x2 //Draw resize grid.
+  #define RDM_ALLCHILDREN   0x4 //Smooth repaint also for all children that not included in RESIZEDIALOG array.
+
+  //RESIZEDIALOG type
+  #define RDS_SIZE  0x1 //Resize control. Can be combined with RDS_X or RDS_Y.
+  #define RDS_MOVE  0x2 //Move control. Can be combined with RDS_X or RDS_Y.
+  #define RDS_X     0x4 //X value. Can be combined with RDS_SIZE or RDS_MOVE.
+  #define RDS_Y     0x8 //Y value. Can be combined with RDS_SIZE or RDS_MOVE.
+#endif
 
 //Dock side
 #define DKS_LEFT    1
@@ -803,6 +844,7 @@
 #define DKF_NODROPRIGHT   0x00000020  //Disable drag-and-drop to the right side.
 #define DKF_NODROPTOP     0x00000040  //Disable drag-and-drop to the top side.
 #define DKF_NODROPBOTTOM  0x00000080  //Disable drag-and-drop to the bottom side.
+#define DKF_NOKEYSEND     0x00000100  //Don't send key messages to dialog from children windows.
 
 //Dock action
 #define DK_ADD         0x00000001  //Add new dockable window.
@@ -911,6 +953,13 @@ DECLARE_HANDLE (HINIFILE);
 DECLARE_HANDLE (HINISECTION);
 DECLARE_HANDLE (HINIKEY);
 
+typedef DWORD (*TRANSLATEPROC)(DWORD dwType, LPMSG lpMsg);
+//dwType  see TMSG_* defines.
+//lpMsg   pointer to an MSG structure that contains message information.
+//
+//Return Value
+// One of the TMSG_* defines, that was last processed.
+//
 typedef void (CALLBACK *WNDPROCRET)(CWPRETSTRUCT *);
 typedef void (CALLBACK *CALLPROC)(void *);
 typedef BOOL (CALLBACK *PLUGINPROC)(void *lpParameter, LPARAM lParam, DWORD dwSupport);
@@ -1008,10 +1057,15 @@ typedef struct _FRAMEDATA {
   DWORD dwLineGap;                                    //Line gap.
   BOOL bShowURL;                                      //Show URL.
   wchar_t wszUrlPrefixes[URL_PREFIXES_SIZE];          //URL prefixes.
+  int nUrlPrefixesLen;                                //URL prefixes length.
   wchar_t wszUrlLeftDelimiters[URL_DELIMITERS_SIZE];  //URL left delimiters.
+  int nUrlLeftDelimitersLen;                          //URL left delimiters length.
   wchar_t wszUrlRightDelimiters[URL_DELIMITERS_SIZE]; //URL right delimiters.
+  int nUrlRightDelimitersLen;                         //URL right delimiters length.
   wchar_t wszWordDelimiters[WORD_DELIMITERS_SIZE];    //Word delimiters.
+  int nWordDelimitersLen;                             //Word delimiters length.
   wchar_t wszWrapDelimiters[WRAP_DELIMITERS_SIZE];    //Wrap delimiters.
+  int nWrapDelimitersLen;                             //Wrap delimiters length.
   wchar_t wszBkImageFile[MAX_PATH];                   //Background image file.
   int nBkImageAlpha;                                  //Alpha transparency value that ranges from 0 to 255.
   HBITMAP hBkImageBitmap;                             //Background image handle.
@@ -1023,6 +1077,7 @@ typedef struct _FRAMEDATA {
   HKL dwInputLocale;                                  //Keyboard layout.
   STACKRECENTCARET hRecentCaretStack;                 //Recent caret stack.
   RECENTCARETITEM *lpCurRecentCaret;                  //Current recent caret position.
+  HANDLE hCurUndoItem;                                //Current undo item position.
 
   //Find/Replace
   INT_PTR nCompileErrorOffset;                        //Contain pattern offset, if error occurred during compile pattern.
@@ -1270,6 +1325,7 @@ typedef struct {
   DWORD dwFlags;            //Open flags. See OD_* defines.
   int nCodePage;            //File code page, ignored if (dwFlags & OD_ADT_DETECTCODEPAGE).
   BOOL bBOM;                //File BOM, ignored if (dwFlags & OD_ADT_DETECTBOM).
+  AEHDOC hDoc;              //Edit document. Can be NULL.
 } OPENDOCUMENTA;
 
 typedef struct {
@@ -1278,19 +1334,22 @@ typedef struct {
   DWORD dwFlags;            //Open flags. See OD_* defines.
   int nCodePage;            //File code page, ignored if (dwFlags & OD_ADT_DETECTCODEPAGE).
   BOOL bBOM;                //File BOM, ignored if (dwFlags & OD_ADT_DETECTBOM).
+  AEHDOC hDoc;              //Edit document. Can be NULL.
 } OPENDOCUMENTW;
 
 typedef struct {
-  HWND hWnd;                 //Window to fill in, NULL for current edit window.
-  DWORD dwFlags;             //Open flags. See OD_* defines.
-  int nCodePage;             //File code page, ignored if (dwFlags & OD_ADT_DETECTCODEPAGE).
-  BOOL bBOM;                 //File BOM, ignored if (dwFlags & OD_ADT_DETECTBOM).
-  char szFile[MAX_PATH];     //File to open.
-  char szWorkDir[MAX_PATH];  //Set working directory before open, if (!*szWorkDir) then don't set.
+  HWND hWnd;                    //Edit window to fill in, NULL for current edit window.
+  AEHDOC hDoc;                  //Edit document. Can be NULL.
+  DWORD dwFlags;                //Open flags. See OD_* defines.
+  int nCodePage;                //File code page, ignored if (dwFlags & OD_ADT_DETECTCODEPAGE).
+  BOOL bBOM;                    //File BOM, ignored if (dwFlags & OD_ADT_DETECTBOM).
+  char szFile[MAX_PATH];        //File to open.
+  char szWorkDir[MAX_PATH];     //Set working directory before open, if (!*szWorkDir) then don't set.
 } OPENDOCUMENTPOSTA;
 
 typedef struct {
-  HWND hWnd;                    //Window to fill in, NULL for current edit window.
+  HWND hWnd;                    //Edit window to fill in, NULL for current edit window.
+  AEHDOC hDoc;                  //Edit document. Can be NULL.
   DWORD dwFlags;                //Open flags. See OD_* defines.
   int nCodePage;                //File code page, ignored if (dwFlags & OD_ADT_DETECTCODEPAGE).
   BOOL bBOM;                    //File BOM, ignored if (dwFlags & OD_ADT_DETECTBOM).
@@ -1303,6 +1362,7 @@ typedef struct {
   int nCodePage;         //File code page.
   BOOL bBOM;             //File BOM.
   DWORD dwFlags;         //See SD_* defines.
+  AEHDOC hDoc;           //Edit document. Can be NULL.
 } SAVEDOCUMENTA;
 
 typedef struct {
@@ -1310,8 +1370,14 @@ typedef struct {
   int nCodePage;         //File code page.
   BOOL bBOM;             //File BOM.
   DWORD dwFlags;         //See SD_* defines.
+  AEHDOC hDoc;           //Edit document. Can be NULL.
 } SAVEDOCUMENTW;
 
+typedef struct {
+  int nCodePage;
+  BOOL bBOM;
+  BOOL bResult;
+} DIALOGCODEPAGE;
 
 //AKD_SETFRAMEINFO
 typedef struct {
@@ -1515,24 +1581,26 @@ typedef struct {
   LPVOID lpParam;                   //Creation parameters.
 } CREATEWINDOWW;
 
-typedef struct {
-  HWND *lpWnd;   //Control window.
-  DWORD dwType;  //See DRS_* defines.
-  int nOffset;   //Control offset, set it to zero.
-} DIALOGRESIZE;
+#ifndef _RESIZEFUNC_H_
+  typedef struct {
+    HWND *lpWnd;   //Control window.
+    DWORD dwType;  //See RDS_* defines.
+    int nOffset;   //Control offset, set it to zero.
+  } RESIZEDIALOG;
+#endif
 
 typedef struct {
-  DIALOGRESIZE *drs;  //Pointer to a first DIALOGRESIZE element in array.
+  RESIZEDIALOG *rds;  //Pointer to a first RESIZEDIALOG element in array. Last element specified as NULL in RESIZEDIALOG.lpWnd.
   RECT *rcMinMax;     //Pointer to a min/max sizes. Each member is valid if not equal to zero. Can be NULL.
                       //RECT->rcMinMax.left, RECT->rcMinMax.top specifies minimum dialog size.
                       //RECT->rcMinMax.right, RECT->rcMinMax.bottom specifies maximum dialog size.
-  RECT *rcCurrent;    //Pointer to a current rectangle. Set all members of RECT to zero at first call.
-  DWORD dwFlags;      //See DRM_* defines.
+  RECT *rcCurrent;    //Pointer to a current dialog rectangle. Set all members of RECT to zero at first call.
+  DWORD dwFlags;      //See RDM_* defines.
   HWND hDlg;          //Dialog handle.
   UINT uMsg;          //Dialog message.
   WPARAM wParam;      //First message parameter.
   LPARAM lParam;      //Second message parameter.
-} DIALOGRESIZEMSG;
+} RESIZEDIALOGMSG;
 
 typedef struct _DOCK {
   struct _DOCK *next;
@@ -1544,6 +1612,18 @@ typedef struct _DOCK {
   RECT rcDragDrop;        //Drag-and-drop client RECT.
   WNDPROC lpOldDockProc;  //Procedure address before subclassing.
 } DOCK;
+
+typedef struct _MODELESS {
+  struct _MODELESS *next;
+  struct _MODELESS *prev;
+  HWND hWnd;
+} MODELESS;
+
+typedef struct {
+  MODELESS *first;
+  MODELESS *last;
+  int nElements;
+} STACKMODELESS;
 
 typedef struct {
   DWORD dwFlags;          //See BIF_* defines.
@@ -1575,6 +1655,13 @@ typedef struct {
 } POSTMESSAGE;
 
 typedef struct {
+  HWND hWnd;           //Window handle.
+  LPARAM lParam;       //Specifies additional message-specific information.
+  LPARAM nReserved1;
+  LPARAM nReserved2;
+} NINITDIALOG;
+
+typedef struct {
   const wchar_t *pCmdLine; //Command line string. On return contain pointer to a unprocessed string.
   const wchar_t *pWorkDir; //Command line string.
 } PARSECMDLINESENDW;
@@ -1589,24 +1676,26 @@ typedef struct {
   BOOL bQuitAsEnd;                     //Internal variable - "/quit" stops parsing command line parameters, but not closes program.
 } PARSECMDLINEPOSTW;
 
-typedef struct _EXTPARAM {
-  struct _EXTPARAM *next;
-  struct _EXTPARAM *prev;
-  DWORD dwType;            //See EXTPARAM_* defines.
-  INT_PTR nNumber;         //External parameter number.
-  char *pString;           //External parameter string (Ansi).
-  wchar_t *wpString;       //External parameter string (Unicode).
-  char *pExpanded;         //External parameter expanded string - without %variables% (Ansi).
-  int nExpandedAnsiLen;    //External parameter expanded ansi string length.
-  wchar_t *wpExpanded;     //External parameter expanded string - without %variables% (Unicode).
-  int nExpandedUnicodeLen; //External parameter expanded unicode string length.
-} EXTPARAM;
+#ifndef _METHODFUNC_H_
+  typedef struct _EXTPARAM {
+    struct _EXTPARAM *next;
+    struct _EXTPARAM *prev;
+    DWORD dwType;            //See EXTPARAM_* defines.
+    INT_PTR nNumber;         //External parameter number.
+    char *pString;           //External parameter string (Ansi).
+    wchar_t *wpString;       //External parameter string (Unicode).
+    char *pExpanded;         //External parameter expanded string - without %variables% (Ansi).
+    int nExpandedAnsiLen;    //External parameter expanded ansi string length.
+    wchar_t *wpExpanded;     //External parameter expanded string - without %variables% (Unicode).
+    int nExpandedUnicodeLen; //External parameter expanded unicode string length.
+  } EXTPARAM;
 
-typedef struct {
-  EXTPARAM *first;
-  EXTPARAM *last;
-  int nElements;
-} STACKEXTPARAM;
+  typedef struct {
+    EXTPARAM *first;
+    EXTPARAM *last;
+    int nElements;
+  } STACKEXTPARAM;
+#endif
 
 typedef struct {
   const wchar_t *wpVar; //Variable. Built-in variables: "%a" - AkelPad directory, "%%" - character %.
@@ -1671,25 +1760,30 @@ typedef struct {
 } NSAVEDOCUMENT;
 
 typedef struct {
-  DWORD *dwStyle;         //Pointer to a maximized state variable (WS_MAXIMIZE or zero).
-  DWORD *dwShow;          //Pointer to a SW_ constants combination variable.
-  BOOL bProcess;          //TRUE   show main window.
-                          //FALSE  do not show main window.
+  DWORD *dwStyle;  //Pointer to a maximized state variable (WS_MAXIMIZE or zero).
+  DWORD *dwShow;   //Pointer to a SW_ constants combination variable.
+  BOOL bProcess;   //TRUE   show main window.
+                   //FALSE  do not show main window.
 } NMAINSHOW;
 
 typedef struct {
-  HWND hWnd;              //Context menu window.
-  UINT uType;             //Type:    NCM_EDIT, NCM_TAB or NCM_STATUS.
-  POINT pt;               //Context menu coordiates.
-  BOOL bMouse;            //Context menu is requested with mouse.
-  BOOL bProcess;          //TRUE   show context menu.
-                          //FALSE  do not show context menu.
+  HWND hWnd;       //Context menu window.
+  UINT uType;      //Type:    NCM_EDIT, NCM_TAB or NCM_STATUS.
+  POINT pt;        //Context menu coordiates.
+  BOOL bMouse;     //Context menu is requested with mouse.
+  BOOL bProcess;   //TRUE   show context menu.
+                   //FALSE  do not show context menu.
 } NCONTEXTMENU;
 
 typedef struct {
-  RECT rcInitial;         //Initial client RECT (read-only).
-  RECT rcCurrent;         //Current client RECT (writeable).
+  RECT rcInitial;  //Initial client RECT (read-only).
+  RECT rcCurrent;  //Current client RECT (writeable).
 } NSIZE;
+
+typedef struct {
+  HWND hWndEdit;   //Changed edit window.
+  DWORD dwFlags;   //See SAE_* defines.
+} NCODERUPDATE;
 
 
 //// AkelPad menu messages
@@ -1914,10 +2008,10 @@ typedef struct {
                                               //Return Value: TRUE - jump to selection beginning, FALSE - jump to selection ending.
                                               //
 #define IDM_EDIT_RECENTCARETPREV        4199  //Move caret to the previous position.
-                                              //Return Value: pointer to a RECENTCARETITEM structure.
+                                              //Return Value: TRUE - success, FALSE - failed.
                                               //
 #define IDM_EDIT_RECENTCARETNEXT        4200  //Move caret to the next position.
-                                              //Return Value: pointer to a RECENTCARETITEM structure.
+                                              //Return Value: TRUE - success, FALSE - failed.
                                               //
 #define IDM_EDIT_LAST                   4200  //Internal.
                                               //
@@ -2049,7 +2143,7 @@ typedef struct {
                                               //Return Value: pointer to a new FRAMEDATA structure.
                                               //
 #define IDM_WINDOW_COPYPATH             4323  //Copy current window file path to clipboard. lParam: see CPF_* defines.
-                                              //Return Value: number of copied character including null character.
+                                              //Return Value: number of copied characters including null character.
                                               //
 #define IDM_WINDOW_FILECLOSE            4324  //Close file.
                                               //Return Value: TRUE - success, FALSE - failed.
@@ -2142,6 +2236,7 @@ typedef struct {
 
 #define AKDN_DLLCALL               (WM_USER + 41)  //0x429
 #define AKDN_DLLUNLOAD             (WM_USER + 42)  //0x42A
+#define AKDN_DLLCODER              (WM_USER + 43)  //0x42B
 
 #define AKDN_ACTIVATE              (WM_USER + 50)  //0x432
 #define AKDN_SIZE_ONSTART          (WM_USER + 51)  //0x433
@@ -2155,6 +2250,11 @@ typedef struct {
 #define AKDN_SEARCH_ENDED          (WM_USER + 59)  //0x43B
 #define AKDN_MESSAGEBOXBEGIN       (WM_USER + 61)  //0x43D
 #define AKDN_MESSAGEBOXEND         (WM_USER + 62)  //0x43E
+#define AKDN_INITDIALOGBEGIN       (WM_USER + 63)  //0x43F
+#define AKDN_INITDIALOGEND         (WM_USER + 64)  //0x440
+#define AKDN_HOTKEYGLOBAL          (WM_USER + 70)  //0x446
+#define AKDN_POSTDOCUMENT_START    (WM_USER + 81)  //0x451
+#define AKDN_POSTDOCUMENT_FINISH   (WM_USER + 82)  //0x452
 
 //SubClass
 #define AKD_GETMAINPROC            (WM_USER + 101)
@@ -2174,16 +2274,16 @@ typedef struct {
 #define AKD_GETCMDLINEOPTIONS      (WM_USER + 121)
 #define AKD_SETCMDLINEOPTIONS      (WM_USER + 122)
 #define AKD_PARSECMDLINEW          (WM_USER + 125)
-#define AKD_PARSEMETHODPARAMETERS  (WM_USER + 126)
-#define AKD_EXPANDMETHODPARAMETERS (WM_USER + 127)
-#define AKD_GETMETHODPARAMETER     (WM_USER + 128)
-#define AKD_STRUCTMETHODPARAMETERS (WM_USER + 129)
-#define AKD_FREEMETHODPARAMETERS   (WM_USER + 130)
+#define AKD_METHODPARSEPARAMETERS  (WM_USER + 126)
+#define AKD_METHODEXPANDPARAMETERS (WM_USER + 127)
+#define AKD_METHODGETPARAMETER     (WM_USER + 128)
+#define AKD_METHODSTRUCTPARAMETERS (WM_USER + 129)
+#define AKD_METHODFREEPARAMETERS   (WM_USER + 130)
 #define AKD_IFEXPRESSION           (WM_USER + 131)
 
 //Text retrieval and modification
 #define AKD_WRITEFILECONTENT       (WM_USER + 141)
-#define AKD_DETECTSELCASE          (WM_USER + 143)
+#define AKD_DETECTCASE             (WM_USER + 143)
 #define AKD_CONVERTCASE            (WM_USER + 144)
 #define AKD_DETECTANSITEXT         (WM_USER + 146)
 #define AKD_DETECTUNITEXT          (WM_USER + 147)
@@ -2253,12 +2353,11 @@ typedef struct {
 #define AKD_DOCK                   (WM_USER + 254)
 #define AKD_SETBUTTONDRAW          (WM_USER + 255)
 #define AKD_SETHOTKEYINPUT         (WM_USER + 256)
-#define AKD_DIALOGRESIZE           (WM_USER + 257)
+#define AKD_RESIZEDIALOG           (WM_USER + 257)
 #define AKD_UPDATESTATUSUSER       (WM_USER + 258)
 
 //Frames
 #define AKD_FRAMEACTIVATE          (WM_USER + 261)
-#define AKD_FRAMENEXT              (WM_USER + 262)
 #define AKD_FRAMEDESTROY           (WM_USER + 263)
 #define AKD_FRAMEFIND              (WM_USER + 264)
 #define AKD_FRAMEFINDA             (WM_USER + 265)
@@ -2286,6 +2385,8 @@ typedef struct {
 #define AKD_GETFOCUS               (WM_USER + 293)
 #define AKD_PEEKMESSAGE            (WM_USER + 294)
 #define AKD_UNIQUEID               (WM_USER + 295)
+#define AKD_GETCLIPBOARDTEXT       (WM_USER + 296)
+#define AKD_SETCLIPBOARDTEXT       (WM_USER + 297)
 
 //Plugin load
 #define AKD_DLLCALL                (WM_USER + 301)
@@ -2603,7 +2704,7 @@ _______________________
 
 Notification message, sends to the main procedure before document opened.
 
-(HWND)wParam            == edit window.
+(FRAMEDATA *)wParam     == pointer to a FRAMEDATA structure.
 (NOPENDOCUMENT *)lParam == pointer to a NOPENDOCUMENT structure.
 
 Return Value
@@ -2615,8 +2716,8 @@ ________________________
 
 Notification message, sends to the main procedure after document opened.
 
-(HWND)wParam == edit window.
-(int)lParam  == see EOD_* defines.
+(FRAMEDATA *)wParam == pointer to a FRAMEDATA structure.
+(int)lParam         == see EOD_* defines.
 
 Return Value
  Zero.
@@ -2627,7 +2728,7 @@ _______________________
 
 Notification message, sends to the main procedure before document saved.
 
-(HWND)wParam            == edit window.
+(FRAMEDATA *)wParam     == pointer to a FRAMEDATA structure.
 (NSAVEDOCUMENT *)lParam == pointer to a NSAVEDOCUMENT structure.
 
 Return Value
@@ -2639,8 +2740,8 @@ ________________________
 
 Notification message, sends to the main procedure after document saved.
 
-(HWND)wParam == edit window.
-(int)lParam  == see ESD_* defines.
+(FRAMEDATA *)wParam == pointer to a FRAMEDATA structure.
+(int)lParam         == see ESD_* defines.
 
 Return Value
  Zero.
@@ -2665,6 +2766,18 @@ Notification message, sends to the main procedure after plugin unload.
 
 wParam              == not used.
 (UNISTRING *)lParam == pointer to a UNISTRING structure, that specified unloaded function name in format "Plugin::Function".
+
+Return Value
+ Zero.
+
+
+AKDN_DLLCODER
+_____________
+
+Notification message, sends to the main procedure by Coder plugin.
+
+(int)wParam  == 0 - set active edit. (NCODERUPDATE *)lParam is a pointer to a NCODERUPDATE structure.
+(void)lParam == depend on wParam.
 
 Return Value
  Zero.
@@ -2732,6 +2845,60 @@ Return Value
  Zero.
 
 
+AKDN_INITDIALOGBEGIN
+____________________
+
+Notification message, sends to the main procedure before processing WM_INITDIALOG.
+
+(int)wParam           == see IDT_* defines.
+(NINITDIALOG *)lParam == pointer to a NINITDIALOG structure.
+
+Return Value
+ Zero.
+
+
+AKDN_INITDIALOGEND
+__________________
+
+Notification message, sends to the main procedure after processing WM_INITDIALOG.
+
+(int)wParam          == see IDT_* defines.
+(NINITDIALOG *)lParam == pointer to a NINITDIALOG structure.
+
+Return Value
+ Zero.
+
+
+AKDN_HOTKEYGLOBAL
+_________________
+
+Same as AKDN_HOTKEY, but sends to the main procedure before any other keyboard key processing.
+
+
+AKDN_POSTDOCUMENT_START
+_______________________
+
+Internal notification message, posts to the main procedure after processing AKD_OPENDOCUMENT and AKD_SAVEDOCUMENT.
+
+(FRAMEDATA *)wParam == pointer to a FRAMEDATA structure.
+(int)lParam         == notification message: AKDN_OPENDOCUMENT_FINISH or AKDN_SAVEDOCUMENT_FINISH.
+
+Return Value
+ Zero.
+
+
+AKDN_POSTDOCUMENT_FINISH
+________________________
+
+Notification message, sends to the main procedure after processing AKDN_POSTDOCUMENT_START and when posted and current frame are equal.
+
+(FRAMEDATA *)wParam == pointer to a FRAMEDATA structure.
+(int)lParam         == notification message: AKDN_OPENDOCUMENT_FINISH or AKDN_SAVEDOCUMENT_FINISH.
+
+Return Value
+ Zero.
+
+
 AKD_GETMAINPROC, AKD_GETEDITPROC, AKD_GETFRAMEPROC
 _______________  _______________  ________________
 
@@ -2742,7 +2909,7 @@ Get procedure from main window subclass chain.
 (WNDPROCDATA **)lParam == procedure data.
 
 Return Value
- Zero, if successfull.
+ Zero, if successful.
 
 Example (get program main procedure data):
  WNDPROCDATA *wpd;
@@ -2791,7 +2958,7 @@ Get return procedure from main window subclass chain. This procedure calls after
 (WNDPROCRETDATA **)lParam == procedure data.
 
 Return Value
- Zero, if successfull.
+ Zero, if successful.
 
 Example:
  WNDPROCRETDATA *wprd;
@@ -2886,7 +3053,7 @@ Example:
  SendMessage(pd->hMainWnd, AKD_PARSECMDLINEW, 0, (LPARAM)&pcls);
 
 
-AKD_PARSEMETHODPARAMETERS
+AKD_METHODPARSEPARAMETERS
 _________________________
 
 Parse method parameters.
@@ -2908,14 +3075,14 @@ Example (call plugin):
                 {L"%t", 2, (INT_PTR)wpMyVar, 0},
                 {0, 0, 0, 0}};
 
- if (SendMessage(pd->hMainWnd, AKD_PARSEMETHODPARAMETERS, (WPARAM)&hParamStack, (LPARAM)&wpText))
+ if (SendMessage(pd->hMainWnd, AKD_METHODPARSEPARAMETERS, (WPARAM)&hParamStack, (LPARAM)&wpText))
  {
-   SendMessage(pd->hMainWnd, AKD_EXPANDMETHODPARAMETERS, (WPARAM)&hParamStack, (LPARAM)ep);
+   SendMessage(pd->hMainWnd, AKD_METHODEXPANDPARAMETERS, (WPARAM)&hParamStack, (LPARAM)ep);
 
-   if (nStructSize=SendMessage(pd->hMainWnd, AKD_STRUCTMETHODPARAMETERS, (WPARAM)&hParamStack, (LPARAM)NULL))
+   if (nStructSize=SendMessage(pd->hMainWnd, AKD_METHODSTRUCTPARAMETERS, (WPARAM)&hParamStack, (LPARAM)NULL))
    {
      if (pcs.lParam=(LPARAM)GlobalAlloc(GPTR, nStructSize))
-       SendMessage(pd->hMainWnd, AKD_STRUCTMETHODPARAMETERS, (WPARAM)&hParamStack, pcs.lParam);
+       SendMessage(pd->hMainWnd, AKD_METHODSTRUCTPARAMETERS, (WPARAM)&hParamStack, pcs.lParam);
    }
    else pcs.lParam=0;
 
@@ -2925,11 +3092,11 @@ Example (call plugin):
    SendMessage(pd->hMainWnd, AKD_DLLCALLW, 0, (LPARAM)&pcs);
    if (pcs.lParam) GlobalFree((HGLOBAL)pcs.lParam);
 
-   SendMessage(pd->hMainWnd, AKD_FREEMETHODPARAMETERS, (WPARAM)&hParamStack, 0);
+   SendMessage(pd->hMainWnd, AKD_METHODFREEPARAMETERS, (WPARAM)&hParamStack, 0);
  }
 
 
-AKD_EXPANDMETHODPARAMETERS
+AKD_METHODEXPANDPARAMETERS
 __________________________
 
 Expand method parameters - fill EXTPARAM.pExpanded, EXTPARAM.nExpandedAnsiLen, EXTPARAM.wpExpanded, EXTPARAM.nExpandedUnicodeLen. For example, "%a" expanded to "C:\\Program Files\\AkelPad".
@@ -2942,13 +3109,13 @@ Return Value
  zero.
 
 Remarks
-  AKD_SETCMDLINEOPTIONS with CLO_VARNOSYSTEM and CLO_VARNOAKELPAD can change AKD_EXPANDMETHODPARAMETERS behavior.
+  AKD_SETCMDLINEOPTIONS with CLO_VARNOSYSTEM and CLO_VARNOAKELPAD can change AKD_METHODEXPANDPARAMETERS behavior.
 
 Example:
- See AKD_PARSEMETHODPARAMETERS example.
+ See AKD_METHODPARSEPARAMETERS example.
 
 
-AKD_GETMETHODPARAMETER
+AKD_METHODGETPARAMETER
 ______________________
 
 Get method parameter.
@@ -2966,20 +3133,20 @@ Example:
  const wchar_t *wpString=NULL;
  int nExtCall=-1;
 
- if (SendMessage(pd->hMainWnd, AKD_PARSEMETHODPARAMETERS, (WPARAM)&hParamStack, (LPARAM)&wpText))
+ if (SendMessage(pd->hMainWnd, AKD_METHODPARSEPARAMETERS, (WPARAM)&hParamStack, (LPARAM)&wpText))
  {
-   if (lpExtParam=(EXTPARAM *)SendMessage(pd->hMainWnd, AKD_GETMETHODPARAMETER, (WPARAM)&hParamStack, 1))
+   if (lpExtParam=(EXTPARAM *)SendMessage(pd->hMainWnd, AKD_METHODGETPARAMETER, (WPARAM)&hParamStack, 1))
      wpString=lpExtParam->wpString;
-   if (lpExtParam=(EXTPARAM *)SendMessage(pd->hMainWnd, AKD_GETMETHODPARAMETER, (WPARAM)&hParamStack, 2))
+   if (lpExtParam=(EXTPARAM *)SendMessage(pd->hMainWnd, AKD_METHODGETPARAMETER, (WPARAM)&hParamStack, 2))
      nExtCall=(int)lpExtParam->nNumber;
 
    if (wpString && nExtCall != -1)
      MessageBoxW(pd->hMainWnd, wpString, NULL, MB_OK);
-   SendMessage(pd->hMainWnd, AKD_FREEMETHODPARAMETERS, (WPARAM)&hParamStack, 0);
+   SendMessage(pd->hMainWnd, AKD_METHODFREEPARAMETERS, (WPARAM)&hParamStack, 0);
  }
 
 
-AKD_STRUCTMETHODPARAMETERS
+AKD_METHODSTRUCTPARAMETERS
 __________________________
 
 Create structure for plugin call.
@@ -2991,10 +3158,10 @@ Return Value
  Size of the data copied to the buffer.
 
 Example:
- See AKD_PARSEMETHODPARAMETERS example.
+ See AKD_METHODPARSEPARAMETERS example.
 
 
-AKD_FREEMETHODPARAMETERS
+AKD_METHODFREEPARAMETERS
 ________________________
 
 Free method parameters.
@@ -3006,7 +3173,7 @@ Return Value
  zero.
 
 Example:
- See AKD_PARSEMETHODPARAMETERS example.
+ See AKD_METHODPARSEPARAMETERS example.
 */
 
 //AKD_IFEXPRESSION
@@ -3047,10 +3214,10 @@ Example:
 //
 // if (ie.nError == IEE_SUCCESS)
 // {
-//   SendMessage(pd->hMainWnd, AKD_EXPANDMETHODPARAMETERS, (WPARAM)&hParamStack, (LPARAM)ep);
-//   if (lpExtParam=(EXTPARAM *)SendMessage(pd->hMainWnd, AKD_GETMETHODPARAMETER, (WPARAM)&hParamStack, 2))
+//   SendMessage(pd->hMainWnd, AKD_METHODEXPANDPARAMETERS, (WPARAM)&hParamStack, (LPARAM)ep);
+//   if (lpExtParam=(EXTPARAM *)SendMessage(pd->hMainWnd, AKD_METHODGETPARAMETER, (WPARAM)&hParamStack, 2))
 //     wpTrueString=lpExtParam->wpExpanded;
-//   if (lpExtParam=(EXTPARAM *)SendMessage(pd->hMainWnd, AKD_GETMETHODPARAMETER, (WPARAM)&hParamStack, 3))
+//   if (lpExtParam=(EXTPARAM *)SendMessage(pd->hMainWnd, AKD_METHODGETPARAMETER, (WPARAM)&hParamStack, 3))
 //     wpFalseString=lpExtParam->wpExpanded;
 //
 //   if (wpTrueString && wpFalseString)
@@ -3062,23 +3229,23 @@ Example:
 //     else
 //       MessageBoxW(pd->hMainWnd, wpFalseString, NULL, MB_OK);
 //   }
-//   SendMessage(pd->hMainWnd, AKD_FREEMETHODPARAMETERS, (WPARAM)&hParamStack, 0);
+//   SendMessage(pd->hMainWnd, AKD_METHODFREEPARAMETERS, (WPARAM)&hParamStack, 0);
 // }
 
 /*
-AKD_DETECTSELCASE
-_________________
+AKD_DETECTCASE
+______________
 
-Detect selection case.
+Detect text case.
 
-(HWND)wParam == edit window, NULL for current edit window.
-lParam       == not used.
+(HWND)wParam          == edit window, NULL for current edit window.
+(AECHARRANGE *)lParam == characters range to detect. If NULL, current selection will be used.
 
 Return Value
  See SCT_* defines.
 
 Example:
- SendMessage(pd->hMainWnd, AKD_DETECTSELCASE, (WPARAM)NULL, 0);
+ SendMessage(pd->hMainWnd, AKD_DETECTCASE, (WPARAM)NULL, (LPARAM)NULL);
 
 
 AKD_CONVERTCASE
@@ -3378,14 +3545,15 @@ Return Value
  See EOD_* defines.
 
 Example (Unicode):
-  OPENDOCUMENTW od;
+ OPENDOCUMENTW od;
 
-  od.pFile=L"C:\\MyFile.txt";
-  od.pWorkDir=NULL;
-  od.dwFlags=OD_ADT_BINARYERROR|OD_ADT_REGCODEPAGE;
-  od.nCodePage=0;
-  od.bBOM=0;
-  SendMessage(pd->hMainWnd, AKD_OPENDOCUMENTW, (WPARAM)NULL, (LPARAM)&od);
+ od.pFile=L"C:\\MyFile.txt";
+ od.pWorkDir=NULL;
+ od.dwFlags=OD_ADT_BINARYERROR|OD_ADT_REGCODEPAGE;
+ od.nCodePage=0;
+ od.bBOM=0;
+ od.hDoc=NULL;
+ SendMessage(pd->hMainWnd, AKD_OPENDOCUMENTW, (WPARAM)NULL, (LPARAM)&od);
 
 
 AKD_SAVEDOCUMENT, AKD_SAVEDOCUMENTA, AKD_SAVEDOCUMENTW
@@ -3406,6 +3574,7 @@ Example (Unicode):
  sd.nCodePage=65001;
  sd.bBOM=TRUE;
  sd.dwFlags=SD_UPDATE;
+ sd.hDoc=NULL;
  SendMessage(pd->hMainWnd, AKD_SAVEDOCUMENTW, (WPARAM)NULL, (LPARAM)&sd);
 
 
@@ -3664,13 +3833,17 @@ __________________
 
 Get program version.
 
-wParam == not used.
-lParam == not used.
+wParam        == not used.
+(DWORD)lParam == version number to compare. Can be zero.
 
 Return Value
- Version number. Created as: MAKE_IDENTIFIER(dwMajor, dwMinor, dwRelease, dwBuild).
+ If lParam is zero, returns program version. Created as: MAKE_IDENTIFIER(dwMajor, dwMinor, dwRelease, dwBuild).
+ If lParam is non-zero, returns compare result of program version with lParam:
+   -1  program version less than lParam.
+    0  program version identical to lParam.
+    1  program version greater than lParam.
 
-Example:
+Example (get program version):
  DWORD dwVersion;
  DWORD dwMajor;
  DWORD dwMinor;
@@ -3683,19 +3856,26 @@ Example:
  dwRelease=LOBYTE(HIWORD(dwVersion));
  dwBuild=HIBYTE(HIWORD(dwVersion));
 
+Example (compare program version):
+ int nCompare=(int)SendMessage(pd->hMainWnd, AKD_PROGRAMVERSION, 0, MAKE_IDENTIFIER(4, 9, 4, 0));
+
 
 AKD_PROGRAMARCHITECTURE
 _______________________
 
 Get program architecture (AkelDLL) version.
 
-wParam == not used.
-lParam == not used.
+wParam        == not used.
+(DWORD)lParam == version number to compare. Can be zero.
 
 Return Value
- Version number. Created as: MAKE_IDENTIFIER(dwMajor, dwMinor, dwRelease, dwBuild).
+ If lParam is zero, returns architecture version. Created as: MAKE_IDENTIFIER(dwMajor, dwMinor, dwRelease, dwBuild).
+ If lParam is non-zero, returns compare result of architecture version with lParam:
+   -1  architecture version less than lParam.
+    0  architecture version identical to lParam.
+    1  architecture version greater than lParam.
 
-Example:
+Example (get architecture version):
  DWORD dwVersion;
  DWORD dwMajor;
  DWORD dwMinor;
@@ -3707,6 +3887,9 @@ Example:
  dwMinor=HIBYTE(LOWORD(dwVersion));
  dwRelease=LOBYTE(HIWORD(dwVersion));
  dwBuild=HIBYTE(HIWORD(dwVersion));
+
+Example (compare architecture version):
+ int nCompare=(int)SendMessage(pd->hMainWnd, AKD_PROGRAMARCHITECTURE, 0, MAKE_IDENTIFIER(2, 1, 0, 0));
 
 
 AKD_GETMAININFO
@@ -3956,7 +4139,7 @@ _______________
 
 Get modeless dialog handle.
 
-wParam        == not used.
+(HWND)wParam  == dialog handle to test. If NULL, test current single modeless dialog.
 (int *)lParam == pointer to a variable that receive dialog MLT_* type. Can be NULL.
 
 Return Value
@@ -3964,7 +4147,7 @@ Return Value
 
 Example:
  int nType;
- HWND hDlg=(HWND)SendMessage(pd->hMainWnd, AKD_GETMODELESS, 0, (LPARAM)&nType);
+ HWND hDlg=(HWND)SendMessage(pd->hMainWnd, AKD_GETMODELESS, (WPARAM)NULL, (LPARAM)&nType);
 
 
 AKD_SETMODELESS
@@ -3973,16 +4156,17 @@ _______________
 Set modeless dialog handle.
 
 (HWND)wParam == dialog handle.
-lParam       == not used.
+(int)lParam  == see MLA_* defines.
 
 Return Value
- Zero.
+ TRUE   success.
+ FALSE  failed.
 
 Remarks
- Only one dialog can be registered as modeless. Application should unregister dialog before closing, passing NULL in wParam.
+ Application should unassign dialog before closing, passing NULL in wParam for MLA_SINGLE or MLA_DELETE for MLA_ADD.
 
 Example:
- SendMessage(pd->hMainWnd, AKD_SETMODELESS, (LPARAM)hMyDialog, 0);
+ SendMessage(pd->hMainWnd, AKD_SETMODELESS, (LPARAM)hMyDialog, MLA_SINGLE);
 
 
 AKD_RESIZE
@@ -4064,13 +4248,13 @@ Example:
  SendMessage(pd->hMainWnd, AKD_SETHOTKEYINPUT, (WPARAM)hWndHotkey, 0);
 
 
-AKD_DIALOGRESIZE
+AKD_RESIZEDIALOG
 ________________
 
 Automatic controls alignment in dialog.
 
 wParam                    == not used.
-(DIALOGRESIZEMSG *)lParam == pointer to a DIALOGRESIZEMSG structure.
+(RESIZEDIALOGMSG *)lParam == pointer to a RESIZEDIALOGMSG structure.
 
 Return Value
  TRUE  dialog size changed.
@@ -4085,10 +4269,10 @@ BOOL CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   static HWND hWndOK;
   static HWND hWndCancel;
-  static DIALOGRESIZE drs[]={{&hWndOK,     DRS_MOVE|DRS_X, 0},
-                             {&hWndOK,     DRS_MOVE|DRS_Y, 0},
-                             {&hWndCancel, DRS_MOVE|DRS_X, 0},
-                             {&hWndCancel, DRS_MOVE|DRS_Y, 0},
+  static RESIZEDIALOG rds[]={{&hWndOK,     RDS_MOVE|RDS_X, 0},
+                             {&hWndOK,     RDS_MOVE|RDS_Y, 0},
+                             {&hWndCancel, RDS_MOVE|RDS_X, 0},
+                             {&hWndCancel, RDS_MOVE|RDS_Y, 0},
                              {0, 0, 0}};
 
   if (uMsg == WM_INITDIALOG)
@@ -4101,9 +4285,9 @@ BOOL CALLBACK DialogProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
   //Dialog resize messages
   {
-    DIALOGRESIZEMSG drsm={&drs[0], &rcMainInitDialog, &rcMainCurrentDialog, DRM_PAINTSIZEGRIP, hDlg, uMsg, wParam, lParam};
+    RESIZEDIALOGMSG rdsm={&rds[0], &rcMainInitDialog, &rcMainCurrentDialog, RDM_PAINTSIZEGRIP, hDlg, uMsg, wParam, lParam};
 
-    if (SendMessage(hMainWnd, AKD_DIALOGRESIZE, 0, (LPARAM)&drsm))
+    if (SendMessage(hMainWnd, AKD_RESIZEDIALOG, 0, (LPARAM)&rdsm))
       bMainDialogRectChanged=TRUE;
   }
   return FALSE;
@@ -4134,27 +4318,11 @@ Activate specified frame.
 (FRAMEDATA *)lParam == pointer to a FRAMEDATA structure.
 
 Return Value
- Pointer to a FRAMEDATA structure that has lost active status.
+ Pointer to an activated FRAMEDATA structure.
 
 Example:
  FRAMEDATA *lpFrame=(FRAMEDATA *)SendMessage(pd->hMainWnd, AKD_FRAMEFINDW, FWF_BYFILENAME, (LPARAM)L"C:\\File.txt");
  SendMessage(pd->hMainWnd, AKD_FRAMEACTIVATE, 0, (LPARAM)lpFrame);
-
-
-AKD_FRAMENEXT
-_____________
-
-Activate next or previous frame.
-
-(BOOL)wParam        == TRUE  activate previous frame.
-                       FALSE activate next frame.
-(FRAMEDATA *)lParam == pointer to a FRAMEDATA structure.
-
-Return Value
- Pointer to a FRAMEDATA structure that has been activated.
-
-Example:
- SendMessage(pd->hMainWnd, AKD_FRAMENEXT, FALSE, (LPARAM)lpFrameCurrent);
 
 
 AKD_FRAMEDESTROY
@@ -4530,6 +4698,7 @@ Example (Unicode):
    pmsd->sd.nCodePage=65001;
    pmsd->sd.bBOM=TRUE;
    pmsd->sd.dwFlags=SD_UPDATE;
+   pmsd->sd.hDoc=NULL;
 
    //Post message
    pmsd->pm.hWnd=pd->hMainWnd;
@@ -4550,10 +4719,14 @@ Process window message.
 
 Return Value
  One of the TMSG_* defines, that was last processed.
+ Pointer to a TRANSLATEPROC, if lParam is NULL. Use TRANSLATEPROC, instead of AKD_TRANSLATEMESSAGE for better performance.
 
 Example:
  MSG msg;
+ TRANSLATEPROC TranslateMessageProc;
  BOOL bExitLoop=FALSE;
+
+ TranslateMessageProc=(TRANSLATEPROC)SendMessage(pd->hMainWnd, AKD_TRANSLATEMESSAGE, 0, (LPARAM)NULL);
 
  for (;;)
  {
@@ -4562,7 +4735,7 @@ Example:
      if (msg.message == WM_QUIT)
        bExitLoop=TRUE;
      else
-       SendMessage(pd->hMainWnd, AKD_TRANSLATEMESSAGE, TMSG_ALL, (LPARAM)&msg);
+       TranslateMessageProc(TMSG_ALL, &msg);
    }
    if (bExitLoop)
      break;
@@ -4671,6 +4844,46 @@ Example:
  INT_PTR nMyID=SendMessage(pd->hMainWnd, AKD_UNIQUEID, 0, 0);
 
 
+AKD_GETCLIPBOARDTEXT
+____________________
+
+Get text from clipboard.
+
+(BOOL)wParam       == TRUE   retrieve ansi text.
+                      FALSE  retrieve unicode text.
+(wchar_t **)lParam == pointer to a variable that receive clipboard text.
+                      If NULL, returns required buffer size in TCHARs.
+                      If variable is NULL, allocate new buffer and copy to it. Release with AKD_FREETEXT when buffer not needed.
+                      If variable is not NULL, copy to this buffer.
+
+Return Value
+ Number of copied characters including null character.
+
+Example:
+ wchar_t *wpText=NULL;
+
+ if (SendMessage(pd->hMainWnd, AKD_GETCLIPBOARDTEXT, FALSE, (LPARAM)&wpText))
+ {
+   MessageBoxW(pd->hMainWnd, wpText, L"Test", MB_OK);
+   SendMessage(pd->hMainWnd, AKD_FREETEXT, 0, (LPARAM)wpText);
+ }
+
+
+AKD_SETCLIPBOARDTEXT
+____________________
+
+Copy text to clipboard.
+
+(const wchar_t *)wParam == text.
+(INT_PTR)lParam         == text length. If this value is -1, the string is assumed to be null-terminated and the length is calculated automatically.
+
+Return Value
+ Number of copied characters including null character.
+
+Example:
+ SendMessage(pd->hMainWnd, AKD_SETCLIPBOARDTEXT, (WPARAM)L"123", (LPARAM)-1);
+
+
 AKD_DLLCALL, AKD_DLLCALLA, AKD_DLLCALLW
 ___________  ____________  ____________
 
@@ -4711,10 +4924,11 @@ Exit from thread and unload dll.
 (HANDLE)lParam  == handle to the thread, NULL if plugin not exiting from thread.
 
 Return Value
- Zero.
+ TRUE  command for exist was successfully posted.
+ FALSE command for exist was not posted.
 
 Example:
- PostMessage(pd->hMainWnd, AKD_DLLUNLOAD, (WPARAM)pd->hInstanceDLL, (LPARAM)NULL);
+ SendMessage(pd->hMainWnd, AKD_DLLUNLOAD, (WPARAM)pd->hInstanceDLL, (LPARAM)NULL);
 
 
 AKD_DLLFIND, AKD_DLLFINDA, AKD_DLLFINDW
@@ -5270,6 +5484,7 @@ Example:
  pr.dwOptions=RESE_GLOBAL|RESE_MULTILINE;
  pr.wpDelim=NULL;
  pr.wpNewLine=NULL;
+ pr.nPointCount=0;
  pr.wszResult=NULL;
  nLen=SendMessage(pd->hMainWnd, AKD_PATREPLACE, 0, (LPARAM)&pr);
 
@@ -5467,6 +5682,7 @@ Example (Ansi):
   odp.dwFlags=OD_ADT_BINARYERROR|OD_ADT_REGCODEPAGE;
   odp.nCodePage=0;
   odp.bBOM=0;
+  odp.hDoc=NULL;
 
   cds.dwData=CD_OPENDOCUMENTA;
   cds.cbData=sizeof(OPENDOCUMENTPOSTA);

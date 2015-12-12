@@ -1,6 +1,6 @@
 /**
  *		Templates for AkelPad
- *		Panych Y.W. aka FeyFre (c) 2010-2014 (panych.y@gmail.com)
+ *		Panych Y.V. aka FeyFre (c) 2010-2015 (panych.y@gmail.com)
  *
  *		This piece of software is distributed under BSD license.
  *		AkelPad is property of its copyright holders.
@@ -73,8 +73,8 @@ BEGIN
 END
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,19,0,0
- PRODUCTVERSION 1,19,0,0
+ FILEVERSION 1,20,0,0
+ PRODUCTVERSION 1,20,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -91,12 +91,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Plugin allows use fill newly created files with predefined content"
             VALUE "FileDescription", "Templates for AkelPad"
-            VALUE "FileVersion", "1, 19, 0, 0"
+            VALUE "FileVersion", "1, 20, 0, 0"
             VALUE "InternalName", "Templates"
-            VALUE "LegalCopyright", "Panych Y.W. (C) 2010-2014"
+            VALUE "LegalCopyright", "Panych Y.V. (C) 2010-2015"
             VALUE "OriginalFilename", "Templates.dll"
             VALUE "ProductName", "Templates for AkelPad"
-            VALUE "ProductVersion", "1, 19, 0, 0"
+            VALUE "ProductVersion", "1, 20, 0, 0"
         END
     END
     BLOCK "VarFileInfo"
