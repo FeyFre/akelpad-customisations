@@ -2,7 +2,7 @@
 #define __ASPELLRAWASPELL_H__
 /**
  *		SpellChecker for AkelPad
- *		Panych Y.W. aka FeyFre (c) 2010-2014 (panych.y@gmail.com)
+ *		Panych Y.V. aka FeyFre (c) 2010-2015 (panych.y@gmail.com)
  *
  *		This piece of software is distributed under BSD license.
  *		AkelPad is property of its copyright holders.

@@ -2,14 +2,15 @@
 #define __COMMON_H__
 /**
  *		SpellChecker for AkelPad
- *		Panych Y.W. aka FeyFre (c) 2010-2014 (panych.y@gmail.com)
+ *		Panych Y.V. aka FeyFre (c) 2010-2015 (panych.y@gmail.com)
  *
  *		This piece of software is distributed under BSD license.
  *		AkelPad is property of its copyright holders.
  *		The New Aspell Copyright (C) 2001-2002 by Kevin Atkinson under the GNU LGPL
  *		license version 2.0 or 2.1.
  */
-
+#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_NON_CONFORMING_SWPRINTFS
 #define WINVER			0x0501
 #define _WIN32_WINNT	0x0501
 #define _WIN32_IE		0x0600

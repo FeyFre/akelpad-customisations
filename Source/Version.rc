@@ -76,8 +76,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,21,0,0
- PRODUCTVERSION 1,21,0,0
+ FILEVERSION 1,22,0,0
+ PRODUCTVERSION 1,22,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -94,12 +94,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Юникод версия"
             VALUE "FileDescription", "SpellCheck: проверка орфографии в AkelPad на базе ASpell"
-            VALUE "FileVersion", "1.21.0.0"
+            VALUE "FileVersion", "1.22.0.0"
             VALUE "InternalName", "SpellCheck.dll"
-            VALUE "LegalCopyright", " (c) Паныч Я.В. 2010-2014"
+            VALUE "LegalCopyright", " (c) Паныч Я.В. 2010-2015"
             VALUE "OriginalFilename", "SpellCheck.dll"
             VALUE "ProductName", "SpellCheck: проверка орфографии в AkelPad на базе ASpell"
-            VALUE "ProductVersion", "1.21.0.0"
+            VALUE "ProductVersion", "1.22.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -203,8 +203,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,21,0,0
- PRODUCTVERSION 1,21,0,0
+ FILEVERSION 1,22,0,0
+ PRODUCTVERSION 1,22,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -221,12 +221,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Юнікод версія"
             VALUE "FileDescription", "SpellCheck: перевірка орфографії у AkelPad на базі ASpell"
-            VALUE "FileVersion", "1.21.0.0"
+            VALUE "FileVersion", "1.22.0.0"
             VALUE "InternalName", "SpellCheck.dll"
-            VALUE "LegalCopyright", " (c) Панич Я.В. 2010-2014"
+            VALUE "LegalCopyright", " (c) Панич Я.В. 2010-2015"
             VALUE "OriginalFilename", "SpellCheck.dll"
             VALUE "ProductName", "SpellCheck: перевірка орфографії у AkelPad на базі ASpell"
-            VALUE "ProductVersion", "1.21.0.0"
+            VALUE "ProductVersion", "1.22.0.0"
         END
     END
     BLOCK "VarFileInfo"
@@ -377,8 +377,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,21,0,0
- PRODUCTVERSION 1,21,0,0
+ FILEVERSION 1,22,0,0
+ PRODUCTVERSION 1,22,0,0
  FILEFLAGSMASK 0x37L
 #ifdef _DEBUG
  FILEFLAGS 0x21L
@@ -395,23 +395,23 @@ BEGIN
         BEGIN
             VALUE "Comments", "Unicode version"
             VALUE "FileDescription", "SpellCheck: ASpell based spellchecker for AkelPad"
-            VALUE "FileVersion", "1.21.0.0"
+            VALUE "FileVersion", "1.22.0.0"
             VALUE "InternalName", "SpellCheck.dll"
-            VALUE "LegalCopyright", " (c) Panych Y.W. 2010-2014"
+            VALUE "LegalCopyright", " (c) Panych Y.V. 2010-2015"
             VALUE "OriginalFilename", "SpellCheck.dll"
             VALUE "ProductName", "SpellCheck: ASpell based spellchecker for AkelPad"
-            VALUE "ProductVersion", "1.21.0.0"
+            VALUE "ProductVersion", "1.22.0.0"
         END
         BLOCK "000904b0"
         BEGIN
             VALUE "Comments", "Unicode version"
             VALUE "FileDescription", "SpellCheck: ASpell based spellchecker for AkelPad"
-            VALUE "FileVersion", "1.21.0.0"
+            VALUE "FileVersion", "1.22.0.0"
             VALUE "InternalName", "SpellCheck.dll"
-            VALUE "LegalCopyright", " (c) Panych Y.W. 2010-2014"
+            VALUE "LegalCopyright", " (c) Panych Y.V. 2010-2015"
             VALUE "OriginalFilename", "SpellCheck.dll"
             VALUE "ProductName", "SpellCheck: ASpell based spellchecker for AkelPad"
-            VALUE "ProductVersion", "1.21.0.0"
+            VALUE "ProductVersion", "1.22.0.0"
         END
     END
     BLOCK "VarFileInfo"
