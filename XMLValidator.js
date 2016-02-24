@@ -1,5 +1,6 @@
 ﻿///Validates selected XML fragment or whole document, pointing potential error place
 // http://akelpad.sourceforge.net/forum/viewtopic.php?p=15256#15256
+// Version: 1.9 (2016.02.24) by Skif_off
 // Version: 1.8 (2015.04.10) by VladSh
 // Version: 1.7 (2014.12.01) by VladSh
 // Version: 1.6 (2012.10.24) by VladSh
@@ -70,7 +71,7 @@ function output(msg, nIcon /*MB_ICON...*/) {
 	var slog = AkelPad.GetArgValue("msgOpts", "0");
 	if (slog == "1" || (slog != "0" && slog.indexOf(nIcon.toString()) != -1)) {
 		var fLogOutput = "Log::Output";
-		if (AkelPad.Call(fLogOutput, 1, "", "", "^\\((\\d+),(\\d+)\\)", "/GOTOLINE=$1:$2") != -1) {
+		if (AkelPad.Call(fLogOutput, 1, "", "", "^\\((\\d+),(\\d+)\\)", "/GOTOLINE=\\1:\\2") != -1) {
 			var nAppend = AkelPad.GetArgValue("append", 0);
 			AkelPad.Call(fLogOutput, 4, msg, -1, nAppend);
 			return;
