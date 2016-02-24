@@ -1,4 +1,5 @@
 ﻿///Validates selected XML fragment or whole document, pointing potential error place
+// https://github.com/FeyFre/akelpad-customisations/blob/scripts/XMLValidator.js
 // http://akelpad.sourceforge.net/forum/viewtopic.php?p=15256#15256
 // Version: 1.9 (2016.02.24) by Skif_off
 // Version: 1.8 (2015.04.10) by VladSh
